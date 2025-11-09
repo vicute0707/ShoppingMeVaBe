@@ -141,4 +141,12 @@ public class OrderService {
     public List<OrderDetail> getOrderDetailsByOrderId(Long orderId) {
         return orderDetailRepository.findByOrderId(orderId);
     }
+
+    public Optional<Order> findById(Long id) {
+        return orderRepository.findById(id);
+    }
+
+    public Order save(Order order) {
+        return orderRepository.save(order);
+    }
 }
