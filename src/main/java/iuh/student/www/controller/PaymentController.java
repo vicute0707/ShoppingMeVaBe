@@ -53,21 +53,21 @@ public class PaymentController {
             if (!isAdmin && !order.getUser().getEmail().equals(currentUserEmail)) {
                 log.warn("Unauthorized payment creation attempt for order #{} by user {}", orderId, currentUserEmail);
                 redirectAttributes.addFlashAttribute("error", "Bạn không có quyền thanh toán đơn hàng này");
-                return "redirect:/orders";
+                return "redirect:/checkout/orders";
             }
 
             // Kiểm tra trạng thái đơn hàng
             if (order.getStatus() != Order.OrderStatus.PENDING) {
                 log.warn("Order #{} is not in PENDING status: {}", orderId, order.getStatus());
                 redirectAttributes.addFlashAttribute("error", "Đơn hàng không ở trạng thái chờ thanh toán");
-                return "redirect:/orders/" + orderId;
+                return "redirect:/checkout/orders/" + orderId;
             }
 
             // Kiểm tra tổng tiền > 0
             if (order.getTotalAmount() == null || order.getTotalAmount() <= 0) {
                 log.error("Invalid order amount for order #{}: {}", orderId, order.getTotalAmount());
                 redirectAttributes.addFlashAttribute("error", "Số tiền đơn hàng không hợp lệ");
-                return "redirect:/orders/" + orderId;
+                return "redirect:/checkout/orders/" + orderId;
             }
 
             // Tạo payment request
@@ -80,13 +80,13 @@ public class PaymentController {
             } else {
                 log.error("Failed to create MoMo payment: {} - {}", response.getResultCode(), response.getMessage());
                 redirectAttributes.addFlashAttribute("error", "Lỗi tạo thanh toán: " + response.getMessage());
-                return "redirect:/orders/" + orderId;
+                return "redirect:/checkout/orders/" + orderId;
             }
 
         } catch (Exception e) {
             log.error("Error creating MoMo payment for order #{}", orderId, e);
             redirectAttributes.addFlashAttribute("error", "Có lỗi xảy ra khi tạo thanh toán: " + e.getMessage());
-            return "redirect:/orders";
+            return "redirect:/checkout/orders";
         }
     }
 
@@ -165,13 +165,13 @@ public class PaymentController {
                 orderService.save(order);
 
                 redirectAttributes.addFlashAttribute("success", "Thanh toán thành công! Đơn hàng #" + orderIdLong + " đang được xử lý.");
-                return "redirect:/orders/" + orderIdLong;
+                return "redirect:/checkout/orders/" + orderIdLong;
 
             } else {
                 // Thanh toán thất bại
                 log.warn("Payment failed for order #{}: {} - {}", orderIdLong, resultCode, message);
                 redirectAttributes.addFlashAttribute("error", "Thanh toán thất bại: " + message);
-                return "redirect:/orders/" + orderIdLong;
+                return "redirect:/checkout/orders/" + orderIdLong;
             }
 
         } catch (Exception e) {
