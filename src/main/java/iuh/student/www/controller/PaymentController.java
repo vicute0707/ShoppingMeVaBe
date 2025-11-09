@@ -27,22 +27,45 @@ public class PaymentController {
 
     /**
      * Tạo thanh toán MoMo
+     * Chỉ cho phép khách hàng thanh toán đơn hàng của chính họ
      *
      * @param orderId ID của đơn hàng
      * @return Redirect đến MoMo payment page
      */
     @GetMapping("/momo/create/{orderId}")
-    public String createMoMoPayment(@PathVariable Long orderId, RedirectAttributes redirectAttributes) {
+    public String createMoMoPayment(
+            @PathVariable Long orderId,
+            RedirectAttributes redirectAttributes,
+            @org.springframework.security.core.Authentication authentication) {
         try {
-            log.info("Creating MoMo payment for order: {}", orderId);
+            log.info("Creating MoMo payment for order: {} by user: {}", orderId, authentication.getName());
 
             // Lấy thông tin đơn hàng
             Order order = orderService.findById(orderId)
                     .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn hàng #" + orderId));
 
+            // SECURITY: Kiểm tra quyền sở hữu đơn hàng (chỉ customer của đơn hàng hoặc admin mới được tạo payment)
+            String currentUserEmail = authentication.getName();
+            boolean isAdmin = authentication.getAuthorities().stream()
+                    .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN"));
+
+            if (!isAdmin && !order.getUser().getEmail().equals(currentUserEmail)) {
+                log.warn("Unauthorized payment creation attempt for order #{} by user {}", orderId, currentUserEmail);
+                redirectAttributes.addFlashAttribute("error", "Bạn không có quyền thanh toán đơn hàng này");
+                return "redirect:/orders";
+            }
+
             // Kiểm tra trạng thái đơn hàng
             if (order.getStatus() != Order.OrderStatus.PENDING) {
+                log.warn("Order #{} is not in PENDING status: {}", orderId, order.getStatus());
                 redirectAttributes.addFlashAttribute("error", "Đơn hàng không ở trạng thái chờ thanh toán");
+                return "redirect:/orders/" + orderId;
+            }
+
+            // Kiểm tra tổng tiền > 0
+            if (order.getTotalAmount() == null || order.getTotalAmount() <= 0) {
+                log.error("Invalid order amount for order #{}: {}", orderId, order.getTotalAmount());
+                redirectAttributes.addFlashAttribute("error", "Số tiền đơn hàng không hợp lệ");
                 return "redirect:/orders/" + orderId;
             }
 
@@ -50,7 +73,7 @@ public class PaymentController {
             MoMoPaymentResponse response = moMoService.createPayment(order);
 
             if (response.getResultCode() == 0) {
-                log.info("MoMo payment URL: {}", response.getPayUrl());
+                log.info("MoMo payment URL created successfully: {}", response.getPayUrl());
                 // Redirect đến trang thanh toán MoMo
                 return "redirect:" + response.getPayUrl();
             } else {
@@ -60,9 +83,9 @@ public class PaymentController {
             }
 
         } catch (Exception e) {
-            log.error("Error creating MoMo payment", e);
+            log.error("Error creating MoMo payment for order #{}", orderId, e);
             redirectAttributes.addFlashAttribute("error", "Có lỗi xảy ra khi tạo thanh toán: " + e.getMessage());
-            return "redirect:/orders/" + orderId;
+            return "redirect:/orders";
         }
     }
 

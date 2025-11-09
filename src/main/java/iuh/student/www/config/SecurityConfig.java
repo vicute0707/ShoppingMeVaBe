@@ -49,11 +49,17 @@ public class SecurityConfig {
 
                         // Public access (Guest) - Web Pages
                         .requestMatchers("/", "/home", "/products/**", "/cart/**", "/register", "/login").permitAll()
-                        .requestMatchers("/css/**", "/js/**", "/images/**", "/h2-console/**").permitAll()
+                        .requestMatchers("/css/**", "/js/**", "/images/**", "/favicon.ico").permitAll()
                         .requestMatchers("/WEB-INF/**").permitAll()  // Allow internal JSP forwards
 
                         // Public REST APIs (Guest)
                         .requestMatchers("/api/public/**", "/api/auth/**").permitAll()
+
+                        // Payment callback - MoMo IPN must be public (called by MoMo server)
+                        .requestMatchers("/payment/momo/callback", "/payment/momo/ipn").permitAll()
+
+                        // Payment creation - only for authenticated customers
+                        .requestMatchers("/payment/momo/create/**").hasAnyRole("CUSTOMER", "ADMIN")
 
                         // Customer access - Web Pages
                         .requestMatchers("/checkout/**", "/orders/**", "/profile/**").hasRole("CUSTOMER")
@@ -92,8 +98,8 @@ public class SecurityConfig {
         // CSRF Configuration
         http.csrf(csrf -> csrf
                 .ignoringRequestMatchers(
-                        "/h2-console/**",          // H2 Console
-                        "/api/**"                   // REST APIs
+                        "/api/**",                  // REST APIs
+                        "/payment/momo/ipn"        // MoMo IPN callback (POST from MoMo server)
                 )
         );
 

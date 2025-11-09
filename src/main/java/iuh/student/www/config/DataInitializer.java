@@ -12,7 +12,18 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-@Component
+/**
+ * DataInitializer DISABLED
+ * Sử dụng dữ liệu từ file data.sql thay vì tạo dữ liệu mẫu trong code
+ *
+ * Để import dữ liệu:
+ * mysql -u root -p shop_me_va_be < src/main/resources/db/data.sql
+ *
+ * Tài khoản mẫu từ data.sql:
+ * - Admin: admin@shopmevabe.com / admin123
+ * - Customer: mai.nguyen@gmail.com / admin123
+ */
+// @Component  // DISABLED - Using data.sql instead
 @RequiredArgsConstructor
 @Slf4j
 public class DataInitializer implements CommandLineRunner {
