@@ -45,15 +45,24 @@ public class SecurityConfig {
         http
                 .authenticationProvider(authenticationProvider())
                 .authorizeHttpRequests(authorize -> authorize
-                        // Public access (Guest)
+                        // Swagger/OpenAPI Documentation
+                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
+
+                        // Public access (Guest) - Web Pages
                         .requestMatchers("/", "/home", "/products/**", "/cart/**", "/register", "/login").permitAll()
                         .requestMatchers("/css/**", "/js/**", "/images/**", "/h2-console/**").permitAll()
 
-                        // Customer access
+                        // Public REST APIs (Guest)
+                        .requestMatchers("/api/public/**", "/api/auth/**").permitAll()
+
+                        // Customer access - Web Pages
                         .requestMatchers("/checkout/**", "/orders/**", "/profile/**").hasRole("CUSTOMER")
 
-                        // Admin access
-                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                        // Customer REST APIs
+                        .requestMatchers("/api/customer/**").hasAnyRole("CUSTOMER", "ADMIN")
+
+                        // Admin access - Web Pages & REST APIs
+                        .requestMatchers("/admin/**", "/api/admin/**").hasRole("ADMIN")
 
                         // All other requests need authentication
                         .anyRequest().authenticated()
@@ -80,10 +89,15 @@ public class SecurityConfig {
                         .maxSessionsPreventsLogin(false)
                 );
 
-        // For H2 Console
+        // CSRF Configuration
         http.csrf(csrf -> csrf
-                .ignoringRequestMatchers("/h2-console/**")
+                .ignoringRequestMatchers(
+                        "/h2-console/**",          // H2 Console
+                        "/api/**"                   // REST APIs
+                )
         );
+
+        // Headers Configuration
         http.headers(headers -> headers
                 .frameOptions(frame -> frame.sameOrigin())
         );
