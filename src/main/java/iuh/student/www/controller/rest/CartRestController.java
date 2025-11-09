@@ -27,7 +27,7 @@ public class CartRestController {
 
     private final ProductService productService;
 
-    private Cart getCart(HttpSession session) {
+    private Cart getOrCreateCart(HttpSession session) {
         Cart cart = (Cart) session.getAttribute("cart");
         if (cart == null) {
             cart = new Cart();
@@ -43,7 +43,7 @@ public class CartRestController {
     })
     @GetMapping
     public ResponseEntity<Cart> getCart(HttpSession session) {
-        Cart cart = getCart(session);
+        Cart cart = getOrCreateCart(session);
         return ResponseEntity.ok(cart);
     }
 
@@ -80,7 +80,7 @@ public class CartRestController {
             return ResponseEntity.badRequest().body(Map.of("error", "Insufficient stock"));
         }
 
-        Cart cart = getCart(session);
+        Cart cart = getOrCreateCart(session);
         CartItem item = new CartItem(
                 product.getId(),
                 product.getName(),
@@ -113,7 +113,7 @@ public class CartRestController {
             return ResponseEntity.badRequest().body(Map.of("error", "Quantity must be 0 or greater"));
         }
 
-        Cart cart = getCart(session);
+        Cart cart = getOrCreateCart(session);
         cart.updateQuantity(productId, quantity);
 
         Map<String, Object> response = new HashMap<>();
@@ -132,7 +132,7 @@ public class CartRestController {
             @PathVariable Long productId,
             HttpSession session) {
 
-        Cart cart = getCart(session);
+        Cart cart = getOrCreateCart(session);
         cart.removeItem(productId);
 
         Map<String, Object> response = new HashMap<>();
@@ -147,7 +147,7 @@ public class CartRestController {
     })
     @DeleteMapping("/clear")
     public ResponseEntity<?> clearCart(HttpSession session) {
-        Cart cart = getCart(session);
+        Cart cart = getOrCreateCart(session);
         cart.clear();
 
         return ResponseEntity.ok(Map.of("message", "Cart cleared successfully"));
