@@ -30,33 +30,32 @@
                     <div class="mb-3">
                         <label for="email" class="form-label">Email *</label>
                         <input type="email" class="form-control" id="email" name="username"
-                               required>
-                        <div class="invalid-feedback">Please enter a valid email.</div>
+                               required autofocus placeholder="Nhập email của bạn">
+                        <div class="invalid-feedback">Vui lòng nhập email hợp lệ.</div>
                     </div>
 
                     <div class="mb-3">
-                        <label for="password" class="form-label">Password *</label>
+                        <label for="password" class="form-label">Mật khẩu *</label>
                         <input type="password" class="form-control" id="password" name="password"
-                               required minlength="6">
-                        <div class="invalid-feedback">Password must be at least 6 characters.</div>
-                    </div>
-
-                    <div class="mb-3 form-check">
-                        <input type="checkbox" class="form-check-input" id="rememberMe" name="remember-me">
-                        <label class="form-check-label" for="rememberMe">Remember me</label>
+                               required minlength="6" placeholder="Nhập mật khẩu (tối thiểu 6 ký tự)">
+                        <div class="invalid-feedback">Mật khẩu phải có ít nhất 6 ký tự.</div>
                     </div>
 
                     <div class="d-grid gap-2">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-sign-in-alt"></i> Login
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-sign-in-alt"></i> Đăng nhập
                         </button>
                     </div>
                 </form>
 
                 <hr>
                 <p class="text-center">
-                    Don't have an account?
-                    <a href="${pageContext.request.contextPath}/register">Register here</a>
+                    Chưa có tài khoản?
+                    <a href="${pageContext.request.contextPath}/register" class="fw-bold">Đăng ký ngay</a>
+                </p>
+                <p class="text-center text-muted small">
+                    <strong>Tài khoản Admin mẫu:</strong><br>
+                    Email: admin@shopmevabe.com | Password: admin123
                 </p>
             </div>
         </div>
