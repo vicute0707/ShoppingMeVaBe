@@ -114,6 +114,12 @@
                 </h4>
             </div>
             <div class="card-footer">
+                <c:if test="${order.status == 'PENDING'}">
+                    <a href="${pageContext.request.contextPath}/payment/momo/create/${order.id}"
+                       class="btn btn-success w-100 mb-2">
+                        <i class="fas fa-credit-card"></i> Thanh toán MoMo
+                    </a>
+                </c:if>
                 <a href="${pageContext.request.contextPath}/checkout/orders" class="btn btn-secondary w-100">
                     <i class="fas fa-arrow-left"></i> Back to Orders
                 </a>
