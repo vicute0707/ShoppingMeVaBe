@@ -7,6 +7,7 @@ import iuh.student.www.service.MoMoService;
 import iuh.student.www.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -36,7 +37,7 @@ public class PaymentController {
     public String createMoMoPayment(
             @PathVariable Long orderId,
             RedirectAttributes redirectAttributes,
-            @org.springframework.security.core.Authentication authentication) {
+            Authentication authentication) {
         try {
             log.info("Creating MoMo payment for order: {} by user: {}", orderId, authentication.getName());
 
