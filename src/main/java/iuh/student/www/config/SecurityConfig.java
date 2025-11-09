@@ -47,6 +47,9 @@ public class SecurityConfig {
                         // Swagger/OpenAPI Documentation
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
 
+                        // Explicitly deny direct access to WEB-INF to prevent redirect loops
+                        .requestMatchers("/WEB-INF/**").denyAll()
+
                         // Public access (Guest) - Web Pages
                         .requestMatchers("/", "/home", "/products/**", "/cart/**", "/register", "/login").permitAll()
                         .requestMatchers("/css/**", "/js/**", "/images/**", "/h2-console/**").permitAll()
