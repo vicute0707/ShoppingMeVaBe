@@ -43,6 +43,15 @@ public class Order {
     @Column(length = 500)
     private String notes;
 
+    @Column(length = 50)
+    private String paymentMethod;
+
+    @Column(length = 20)
+    private String paymentStatus;
+
+    @Column(length = 100)
+    private String transactionId;
+
     @Column(updatable = false)
     private LocalDateTime createdAt;
 

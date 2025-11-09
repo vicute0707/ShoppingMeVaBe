@@ -79,6 +79,13 @@
             <scope>runtime</scope>
         </dependency>
 
+        <!-- MariaDB Database -->
+        <dependency>
+            <groupId>org.mariadb.jdbc</groupId>
+            <artifactId>mariadb-java-client</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
         <!-- H2 Database (for development/testing) -->
         <dependency>
             <groupId>com.h2database</groupId>

@@ -1,0 +1,207 @@
+package iuh.student.www.controller;
+
+import iuh.student.www.dto.MoMoCallbackResponse;
+import iuh.student.www.dto.MoMoPaymentResponse;
+import iuh.student.www.entity.Order;
+import iuh.student.www.service.MoMoService;
+import iuh.student.www.service.OrderService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+/**
+ * Payment Controller
+ * Xử lý thanh toán cho Cửa Hàng Mẹ và Bé 🍼👶
+ */
+@Controller
+@RequestMapping("/payment")
+@RequiredArgsConstructor
+@Slf4j
+public class PaymentController {
+
+    private final MoMoService moMoService;
+    private final OrderService orderService;
+
+    /**
+     * Tạo thanh toán MoMo
+     *
+     * @param orderId ID của đơn hàng
+     * @return Redirect đến MoMo payment page
+     */
+    @GetMapping("/momo/create/{orderId}")
+    public String createMoMoPayment(@PathVariable Long orderId, RedirectAttributes redirectAttributes) {
+        try {
+            log.info("Creating MoMo payment for order: {}", orderId);
+
+            // Lấy thông tin đơn hàng
+            Order order = orderService.findById(orderId)
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn hàng #" + orderId));
+
+            // Kiểm tra trạng thái đơn hàng
+            if (order.getStatus() != Order.OrderStatus.PENDING) {
+                redirectAttributes.addFlashAttribute("error", "Đơn hàng không ở trạng thái chờ thanh toán");
+                return "redirect:/orders/" + orderId;
+            }
+
+            // Tạo payment request
+            MoMoPaymentResponse response = moMoService.createPayment(order);
+
+            if (response.getResultCode() == 0) {
+                log.info("MoMo payment URL: {}", response.getPayUrl());
+                // Redirect đến trang thanh toán MoMo
+                return "redirect:" + response.getPayUrl();
+            } else {
+                log.error("Failed to create MoMo payment: {} - {}", response.getResultCode(), response.getMessage());
+                redirectAttributes.addFlashAttribute("error", "Lỗi tạo thanh toán: " + response.getMessage());
+                return "redirect:/orders/" + orderId;
+            }
+
+        } catch (Exception e) {
+            log.error("Error creating MoMo payment", e);
+            redirectAttributes.addFlashAttribute("error", "Có lỗi xảy ra khi tạo thanh toán: " + e.getMessage());
+            return "redirect:/orders/" + orderId;
+        }
+    }
+
+    /**
+     * Callback từ MoMo sau khi thanh toán
+     * URL này sẽ được MoMo redirect user về sau khi thanh toán
+     */
+    @GetMapping("/momo/callback")
+    public String momoCallback(
+            @RequestParam(required = false) String partnerCode,
+            @RequestParam(required = false) String orderId,
+            @RequestParam(required = false) String requestId,
+            @RequestParam(required = false) Long amount,
+            @RequestParam(required = false) String orderInfo,
+            @RequestParam(required = false) String orderType,
+            @RequestParam(required = false) Long transId,
+            @RequestParam(required = false) Integer resultCode,
+            @RequestParam(required = false) String message,
+            @RequestParam(required = false) String payType,
+            @RequestParam(required = false) Long responseTime,
+            @RequestParam(required = false) String extraData,
+            @RequestParam(required = false) String signature,
+            Model model,
+            RedirectAttributes redirectAttributes
+    ) {
+        try {
+            log.info("MoMo callback received - OrderId: {}, ResultCode: {}, Message: {}", orderId, resultCode, message);
+
+            // Tạo callback response object
+            MoMoCallbackResponse callback = MoMoCallbackResponse.builder()
+                    .partnerCode(partnerCode)
+                    .orderId(orderId)
+                    .requestId(requestId)
+                    .amount(amount)
+                    .orderInfo(orderInfo)
+                    .orderType(orderType)
+                    .transId(transId)
+                    .resultCode(resultCode)
+                    .message(message)
+                    .payType(payType)
+                    .responseTime(responseTime)
+                    .extraData(extraData != null ? extraData : "")
+                    .signature(signature)
+                    .build();
+
+            // Xác thực signature
+            boolean isValid = moMoService.verifyCallback(callback);
+
+            if (!isValid) {
+                log.error("Invalid MoMo signature");
+                redirectAttributes.addFlashAttribute("error", "Chữ ký không hợp lệ");
+                return "redirect:/";
+            }
+
+            // Lấy order ID từ MoMo order ID
+            Long orderIdLong = moMoService.extractOrderId(orderId);
+
+            if (orderIdLong == null) {
+                log.error("Cannot extract order ID from: {}", orderId);
+                redirectAttributes.addFlashAttribute("error", "Không thể xác định đơn hàng");
+                return "redirect:/";
+            }
+
+            // Lấy thông tin đơn hàng
+            Order order = orderService.findById(orderIdLong)
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn hàng #" + orderIdLong));
+
+            // Xử lý kết quả thanh toán
+            if (resultCode == 0) {
+                // Thanh toán thành công
+                log.info("Payment successful for order #{}", orderIdLong);
+                order.setStatus(Order.OrderStatus.PROCESSING);
+                order.setPaymentMethod("MOMO");
+                order.setPaymentStatus("PAID");
+                order.setTransactionId(transId != null ? transId.toString() : null);
+                orderService.save(order);
+
+                redirectAttributes.addFlashAttribute("success", "Thanh toán thành công! Đơn hàng #" + orderIdLong + " đang được xử lý.");
+                return "redirect:/orders/" + orderIdLong;
+
+            } else {
+                // Thanh toán thất bại
+                log.warn("Payment failed for order #{}: {} - {}", orderIdLong, resultCode, message);
+                redirectAttributes.addFlashAttribute("error", "Thanh toán thất bại: " + message);
+                return "redirect:/orders/" + orderIdLong;
+            }
+
+        } catch (Exception e) {
+            log.error("Error processing MoMo callback", e);
+            redirectAttributes.addFlashAttribute("error", "Có lỗi xảy ra khi xử lý thanh toán: " + e.getMessage());
+            return "redirect:/";
+        }
+    }
+
+    /**
+     * IPN (Instant Payment Notification) từ MoMo
+     * Endpoint này nhận notification từ MoMo server
+     */
+    @PostMapping("/momo/ipn")
+    @ResponseBody
+    public String momoIPN(@RequestBody MoMoCallbackResponse callback) {
+        try {
+            log.info("MoMo IPN received - OrderId: {}, ResultCode: {}", callback.getOrderId(), callback.getResultCode());
+
+            // Xác thực signature
+            boolean isValid = moMoService.verifyCallback(callback);
+
+            if (!isValid) {
+                log.error("Invalid MoMo IPN signature");
+                return "{\"status\":\"error\",\"message\":\"Invalid signature\"}";
+            }
+
+            // Lấy order ID
+            Long orderId = moMoService.extractOrderId(callback.getOrderId());
+
+            if (orderId == null) {
+                log.error("Cannot extract order ID from: {}", callback.getOrderId());
+                return "{\"status\":\"error\",\"message\":\"Invalid order ID\"}";
+            }
+
+            // Lấy thông tin đơn hàng
+            Order order = orderService.findById(orderId)
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn hàng #" + orderId));
+
+            // Cập nhật trạng thái đơn hàng
+            if (callback.getResultCode() == 0) {
+                order.setStatus(Order.OrderStatus.PROCESSING);
+                order.setPaymentMethod("MOMO");
+                order.setPaymentStatus("PAID");
+                order.setTransactionId(callback.getTransId() != null ? callback.getTransId().toString() : null);
+                orderService.save(order);
+                log.info("Order #{} updated successfully via IPN", orderId);
+            }
+
+            return "{\"status\":\"success\"}";
+
+        } catch (Exception e) {
+            log.error("Error processing MoMo IPN", e);
+            return "{\"status\":\"error\",\"message\":\"" + e.getMessage() + "\"}";
+        }
+    }
+}
