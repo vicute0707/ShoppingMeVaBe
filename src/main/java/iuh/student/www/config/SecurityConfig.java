@@ -90,8 +90,8 @@ public class SecurityConfig {
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
 
-                        // All other requests need authentication
-                        .anyRequest().authenticated()
+                        // All other requests are permitted (for web views)
+                        .anyRequest().permitAll()
                 )
                 // Add JWT filter before UsernamePasswordAuthenticationFilter
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
