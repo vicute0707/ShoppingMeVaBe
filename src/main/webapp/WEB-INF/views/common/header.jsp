@@ -23,21 +23,29 @@
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav me-auto">
                 <li class="nav-item">
-                    <a class="nav-link" href="${pageContext.request.contextPath}/">Home</a>
+                    <a class="nav-link" href="${pageContext.request.contextPath}/">
+                        <i class="fas fa-home"></i> Trang chủ
+                    </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="${pageContext.request.contextPath}/products">Products</a>
+                    <a class="nav-link" href="${pageContext.request.contextPath}/products">
+                        <i class="fas fa-box"></i> Sản phẩm
+                    </a>
                 </li>
-                <sec:authorize access="hasRole('CUSTOMER')">
+                <c:if test="${pageContext.request.userPrincipal != null && pageContext.request.isUserInRole('CUSTOMER')}">
                     <li class="nav-item">
-                        <a class="nav-link" href="${pageContext.request.contextPath}/checkout/orders">My Orders</a>
+                        <a class="nav-link" href="${pageContext.request.contextPath}/orders">
+                            <i class="fas fa-shopping-bag"></i> Đơn hàng của tôi
+                        </a>
                     </li>
-                </sec:authorize>
-                <sec:authorize access="hasRole('ADMIN')">
+                </c:if>
+                <c:if test="${pageContext.request.userPrincipal != null && pageContext.request.isUserInRole('ADMIN')}">
                     <li class="nav-item">
-                        <a class="nav-link" href="${pageContext.request.contextPath}/admin/dashboard">Admin Panel</a>
+                        <a class="nav-link" href="${pageContext.request.contextPath}/admin/dashboard">
+                            <i class="fas fa-tachometer-alt"></i> Quản trị
+                        </a>
                     </li>
-                </sec:authorize>
+                </c:if>
             </ul>
             <ul class="navbar-nav">
                 <li class="nav-item">
@@ -48,36 +56,38 @@
                         </c:if>
                     </a>
                 </li>
-                <sec:authorize access="isAuthenticated()">
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
-                           data-bs-toggle="dropdown">
-                            <i class="fas fa-user"></i> <sec:authentication property="principal.username"/>
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-end">
-                            <li>
-                                <form action="${pageContext.request.contextPath}/logout" method="post">
-                                    <sec:csrfInput/>
-                                    <button type="submit" class="dropdown-item">
-                                        <i class="fas fa-sign-out-alt"></i> Logout
-                                    </button>
-                                </form>
-                            </li>
-                        </ul>
-                    </li>
-                </sec:authorize>
-                <sec:authorize access="!isAuthenticated()">
-                    <li class="nav-item">
-                        <a class="nav-link" href="${pageContext.request.contextPath}/login">
-                            <i class="fas fa-sign-in-alt"></i> Login
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="${pageContext.request.contextPath}/register">
-                            <i class="fas fa-user-plus"></i> Register
-                        </a>
-                    </li>
-                </sec:authorize>
+                <%-- Check authentication from SecurityContext (JWT sets this) --%>
+                <c:choose>
+                    <c:when test="${pageContext.request.userPrincipal != null}">
+                        <%-- User is authenticated --%>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
+                               data-bs-toggle="dropdown">
+                                <i class="fas fa-user"></i> ${pageContext.request.userPrincipal.name}
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li>
+                                    <a href="${pageContext.request.contextPath}/logout" class="dropdown-item">
+                                        <i class="fas fa-sign-out-alt"></i> Đăng xuất
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                    </c:when>
+                    <c:otherwise>
+                        <%-- User is not authenticated --%>
+                        <li class="nav-item">
+                            <a class="nav-link" href="${pageContext.request.contextPath}/login">
+                                <i class="fas fa-sign-in-alt"></i> Đăng nhập
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="${pageContext.request.contextPath}/register">
+                                <i class="fas fa-user-plus"></i> Đăng ký
+                            </a>
+                        </li>
+                    </c:otherwise>
+                </c:choose>
             </ul>
         </div>
     </div>
