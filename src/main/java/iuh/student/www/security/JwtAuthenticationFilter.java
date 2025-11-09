@@ -53,11 +53,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             for (jakarta.servlet.http.Cookie cookie : request.getCookies()) {
                 if ("JWT_TOKEN".equals(cookie.getName())) {
                     jwt = cookie.getValue();
-                    try {
-                        username = jwtUtil.extractUsername(jwt);
-                        log.debug("JWT token found in cookie for user: {}", username);
-                    } catch (Exception e) {
-                        log.error("Error extracting username from JWT cookie: {}", e.getMessage());
+                    // Skip empty or very short tokens
+                    if (jwt != null && jwt.length() > 10) {
+                        try {
+                            username = jwtUtil.extractUsername(jwt);
+                            log.debug("JWT token found in cookie for user: {}", username);
+                        } catch (Exception e) {
+                            log.warn("Invalid JWT token in cookie, ignoring: {}", e.getMessage());
+                            jwt = null; // Reset to avoid further processing
+                            username = null;
+                        }
+                    } else {
+                        jwt = null;
                     }
                     break;
                 }
@@ -65,19 +72,26 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         // Validate token and set authentication
-        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+        if (username != null && jwt != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            try {
+                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
-            if (jwtUtil.validateToken(jwt, userDetails)) {
-                UsernamePasswordAuthenticationToken authToken =
-                        new UsernamePasswordAuthenticationToken(
-                                userDetails,
-                                null,
-                                userDetails.getAuthorities()
-                        );
-                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(authToken);
-                log.debug("User {} authenticated via JWT", username);
+                if (jwtUtil.validateToken(jwt, userDetails)) {
+                    UsernamePasswordAuthenticationToken authToken =
+                            new UsernamePasswordAuthenticationToken(
+                                    userDetails,
+                                    null,
+                                    userDetails.getAuthorities()
+                            );
+                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                    log.debug("User {} authenticated via JWT", username);
+                } else {
+                    log.warn("JWT token validation failed for user: {}", username);
+                }
+            } catch (Exception e) {
+                log.error("Authentication failed: {}", e.getMessage());
+                // Don't set authentication - user will be anonymous
             }
         }
 

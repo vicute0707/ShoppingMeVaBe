@@ -141,15 +141,26 @@ public class AuthController {
     }
 
     @GetMapping("/logout")
-    public String logout(HttpServletResponse response, RedirectAttributes redirectAttributes) {
-        // Remove JWT cookie
-        Cookie jwtCookie = new Cookie("JWT_TOKEN", null);
+    public String logout(HttpServletRequest request, HttpServletResponse response, RedirectAttributes redirectAttributes) {
+        // Clear JWT cookie - multiple attempts to ensure it's cleared
+        Cookie jwtCookie = new Cookie("JWT_TOKEN", "");
         jwtCookie.setHttpOnly(true);
         jwtCookie.setPath("/");
-        jwtCookie.setMaxAge(0); // Delete cookie
+        jwtCookie.setMaxAge(0); // Delete immediately
         response.addCookie(jwtCookie);
 
-        log.info("User logged out successfully");
+        // Also try to clear JSESSIONID if exists
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                cookie.setValue("");
+                cookie.setPath("/");
+                cookie.setMaxAge(0);
+                response.addCookie(cookie);
+            }
+        }
+
+        log.info("User logged out successfully - All cookies cleared");
         redirectAttributes.addFlashAttribute("successMessage", "Đăng xuất thành công!");
         return "redirect:/login";
     }
