@@ -37,14 +37,30 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String username = null;
         String jwt = null;
 
-        // Extract JWT from Authorization header
+        // Extract JWT from Authorization header (for API calls)
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
             jwt = authorizationHeader.substring(7);
             try {
                 username = jwtUtil.extractUsername(jwt);
-                log.debug("JWT token found for user: {}", username);
+                log.debug("JWT token found in header for user: {}", username);
             } catch (Exception e) {
-                log.error("Error extracting username from JWT: {}", e.getMessage());
+                log.error("Error extracting username from JWT header: {}", e.getMessage());
+            }
+        }
+
+        // If no JWT in header, try to get from cookie (for web login)
+        if (jwt == null && request.getCookies() != null) {
+            for (jakarta.servlet.http.Cookie cookie : request.getCookies()) {
+                if ("JWT_TOKEN".equals(cookie.getName())) {
+                    jwt = cookie.getValue();
+                    try {
+                        username = jwtUtil.extractUsername(jwt);
+                        log.debug("JWT token found in cookie for user: {}", username);
+                    } catch (Exception e) {
+                        log.error("Error extracting username from JWT cookie: {}", e.getMessage());
+                    }
+                    break;
+                }
             }
         }
 

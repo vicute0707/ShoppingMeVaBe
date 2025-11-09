@@ -61,7 +61,8 @@ public class SecurityConfig {
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
 
                         // Public web pages - Thymeleaf views (cho phép truy cập tất cả trang web)
-                        .requestMatchers("/", "/home", "/error", "/login", "/register").permitAll()
+                        .requestMatchers("/", "/home", "/error", "/login", "/register", "/logout").permitAll()
+                        .requestMatchers("/perform-login").permitAll()
                         .requestMatchers("/products", "/products/**", "/categories", "/categories/**").permitAll()
                         .requestMatchers("/cart", "/cart/**", "/checkout", "/about", "/contact").permitAll()
 
