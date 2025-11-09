@@ -46,14 +46,17 @@ public class AuthController {
         // Redirect authenticated users away from login page
         if (authentication != null && authentication.isAuthenticated()
                 && !authentication.getPrincipal().equals("anonymousUser")) {
-            return "redirect:/";
+            // Check if admin or customer
+            boolean isAdmin = authentication.getAuthorities().stream()
+                    .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN"));
+            return isAdmin ? "redirect:/admin/dashboard" : "redirect:/";
         }
 
         if (error != null) {
-            model.addAttribute("errorMessage", "Invalid email or password");
+            model.addAttribute("errorMessage", "Email hoặc mật khẩu không đúng!");
         }
         if (logout != null) {
-            model.addAttribute("successMessage", "You have been logged out successfully");
+            model.addAttribute("successMessage", "Đăng xuất thành công!");
         }
         return "guest/login";
     }

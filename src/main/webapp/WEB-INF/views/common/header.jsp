@@ -34,7 +34,7 @@
                 </li>
                 <c:if test="${pageContext.request.userPrincipal != null && pageContext.request.isUserInRole('CUSTOMER')}">
                     <li class="nav-item">
-                        <a class="nav-link" href="${pageContext.request.contextPath}/orders">
+                        <a class="nav-link" href="${pageContext.request.contextPath}/checkout/orders">
                             <i class="fas fa-shopping-bag"></i> Đơn hàng của tôi
                         </a>
                     </li>
