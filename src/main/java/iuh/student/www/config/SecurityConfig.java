@@ -64,7 +64,7 @@ public class SecurityConfig {
                         .requestMatchers("/", "/home", "/error", "/login", "/register", "/logout", "/clear-cookies").permitAll()
                         .requestMatchers("/perform-login").permitAll()
                         .requestMatchers("/products", "/products/**", "/categories", "/categories/**").permitAll()
-                        .requestMatchers("/cart", "/cart/**", "/checkout", "/about", "/contact").permitAll()
+                        .requestMatchers("/cart", "/cart/**", "/about", "/contact").permitAll()
 
                         // Authentication APIs - Public
                         .requestMatchers("/api/auth/**").permitAll()
@@ -80,6 +80,7 @@ public class SecurityConfig {
                         .requestMatchers("/payment/momo/callback", "/payment/momo/ipn").permitAll()
 
                         // Customer web pages - Authenticated
+                        .requestMatchers("/checkout", "/checkout/**").hasAnyRole("CUSTOMER", "ADMIN")
                         .requestMatchers("/orders", "/orders/**", "/profile", "/profile/**").hasAnyRole("CUSTOMER", "ADMIN")
 
                         // Customer APIs - Authenticated
