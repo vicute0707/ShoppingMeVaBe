@@ -24,7 +24,7 @@
                 <div class="row">
                     <div class="col-md-6">
                         <p><strong>Order Date:</strong>
-                            <fmt:formatDate value="${order.orderDate}" pattern="dd/MM/yyyy HH:mm"/></p>
+                            ${order.orderDate.dayOfMonth}/${order.orderDate.monthValue}/${order.orderDate.year} ${order.orderDate.hour}:${order.orderDate.minute < 10 ? '0' : ''}${order.orderDate.minute}</p>
                         <p><strong>Status:</strong>
                             <c:choose>
                                 <c:when test="${order.status == 'PENDING'}">

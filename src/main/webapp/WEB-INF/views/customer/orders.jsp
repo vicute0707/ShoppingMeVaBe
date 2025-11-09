@@ -24,7 +24,7 @@
                     <tr>
                         <td>#${order.id}</td>
                         <td>
-                            <fmt:formatDate value="${order.orderDate}" pattern="dd/MM/yyyy HH:mm"/>
+                            ${order.orderDate.dayOfMonth}/${order.orderDate.monthValue}/${order.orderDate.year} ${order.orderDate.hour}:${order.orderDate.minute < 10 ? '0' : ''}${order.orderDate.minute}
                         </td>
                         <td>
                             <fmt:formatNumber value="${order.totalAmount}" type="currency" currencySymbol="$"/>

@@ -23,7 +23,7 @@
                     <div class="col-md-6">
                         <p><strong>Order ID:</strong> #${order.id}</p>
                         <p><strong>Order Date:</strong>
-                            <fmt:formatDate value="${order.orderDate}" pattern="dd/MM/yyyy HH:mm"/></p>
+                            ${order.orderDate.dayOfMonth}/${order.orderDate.monthValue}/${order.orderDate.year} ${order.orderDate.hour}:${order.orderDate.minute < 10 ? '0' : ''}${order.orderDate.minute}</p>
                         <p><strong>Customer:</strong> ${order.user.fullName}</p>
                         <p><strong>Email:</strong> ${order.user.email}</p>
                     </div>
