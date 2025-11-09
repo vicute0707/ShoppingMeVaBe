@@ -10,7 +10,7 @@
                 <h3>Login</h3>
             </div>
             <div class="card-body">
-                <form action="${pageContext.request.contextPath}/login" method="post" id="loginForm">
+                <form action="${pageContext.request.contextPath}/perform-login" method="post" id="loginForm">
                     <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
 
                     <div class="mb-3">
