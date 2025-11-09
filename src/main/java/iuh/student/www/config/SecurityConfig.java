@@ -1,6 +1,7 @@
 package iuh.student.www.config;
 
 import iuh.student.www.security.CustomUserDetailsService;
+import iuh.student.www.security.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -10,10 +11,16 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+/**
+ * Security Configuration với JWT Authentication
+ * Modern stateless authentication using JWT tokens
+ */
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
@@ -21,6 +28,7 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SecurityConfig {
 
     private final CustomUserDetailsService userDetailsService;
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -43,70 +51,43 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http, DaoAuthenticationProvider authenticationProvider) throws Exception {
         http
                 .authenticationProvider(authenticationProvider)
+                .csrf(csrf -> csrf.disable()) // Disable CSRF cho JWT (stateless)
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS) // Không dùng session
+                )
                 .authorizeHttpRequests(authorize -> authorize
-                        // Swagger/OpenAPI Documentation
+                        // Public endpoints
+                        .requestMatchers("/", "/home", "/error").permitAll()
+                        .requestMatchers("/css/**", "/js/**", "/images/**", "/favicon.ico").permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
 
-                        // Public access (Guest) - Web Pages
-                        .requestMatchers("/", "/home", "/products/**", "/cart/**", "/register", "/login").permitAll()
-                        .requestMatchers("/css/**", "/js/**", "/images/**", "/favicon.ico").permitAll()
-                        .requestMatchers("/WEB-INF/**").permitAll()  // Allow internal JSP forwards
+                        // Authentication APIs - Public
+                        .requestMatchers("/api/auth/**").permitAll()
 
-                        // Public REST APIs (Guest)
-                        .requestMatchers("/api/public/**", "/api/auth/**").permitAll()
+                        // Public REST APIs
+                        .requestMatchers("/api/public/**").permitAll()
 
-                        // Payment callback - MoMo IPN must be public (called by MoMo server)
+                        // Product APIs - Public read, authenticated write
+                        .requestMatchers("/api/products", "/api/products/**").permitAll()
+                        .requestMatchers("/api/categories", "/api/categories/**").permitAll()
+
+                        // MoMo Payment - Public callbacks
                         .requestMatchers("/payment/momo/callback", "/payment/momo/ipn").permitAll()
 
-                        // Payment creation - only for authenticated customers
+                        // Customer APIs - Authenticated
+                        .requestMatchers("/api/customer/**").hasAnyRole("CUSTOMER", "ADMIN")
+                        .requestMatchers("/api/orders/**").hasAnyRole("CUSTOMER", "ADMIN")
                         .requestMatchers("/payment/momo/create/**").hasAnyRole("CUSTOMER", "ADMIN")
 
-                        // Customer access - Web Pages
-                        .requestMatchers("/checkout/**", "/orders/**", "/profile/**").hasRole("CUSTOMER")
-
-                        // Customer REST APIs
-                        .requestMatchers("/api/customer/**").hasAnyRole("CUSTOMER", "ADMIN")
-
-                        // Admin access - Web Pages & REST APIs
-                        .requestMatchers("/admin/**", "/api/admin/**").hasRole("ADMIN")
+                        // Admin APIs - Admin only
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
 
                         // All other requests need authentication
                         .anyRequest().authenticated()
                 )
-                .formLogin(form -> form
-                        .loginPage("/login")
-                        .loginProcessingUrl("/perform-login")
-                        .defaultSuccessUrl("/login-success", true)
-                        .failureUrl("/login?error=true")
-                        .permitAll()
-                )
-                .logout(logout -> logout
-                        .logoutUrl("/logout")
-                        .logoutSuccessUrl("/login?logout=true")
-                        .invalidateHttpSession(true)
-                        .deleteCookies("JSESSIONID")
-                        .permitAll()
-                )
-                .exceptionHandling(exception -> exception
-                        .accessDeniedPage("/access-denied")
-                )
-                .sessionManagement(session -> session
-                        .maximumSessions(1)
-                        .maxSessionsPreventsLogin(false)
-                );
-
-        // CSRF Configuration
-        http.csrf(csrf -> csrf
-                .ignoringRequestMatchers(
-                        "/api/**",                  // REST APIs
-                        "/payment/momo/ipn"        // MoMo IPN callback (POST from MoMo server)
-                )
-        );
-
-        // Headers Configuration
-        http.headers(headers -> headers
-                .frameOptions(frame -> frame.sameOrigin())
-        );
+                // Add JWT filter before UsernamePasswordAuthenticationFilter
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
