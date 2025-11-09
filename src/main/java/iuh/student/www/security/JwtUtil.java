@@ -80,8 +80,10 @@ public class JwtUtil {
      */
     public String generateToken(UserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
-        // Add custom claims if needed
-        claims.put("authorities", userDetails.getAuthorities());
+        // Add custom claims - convert authorities to string list to avoid serialization issues
+        claims.put("authorities", userDetails.getAuthorities().stream()
+                .map(auth -> auth.getAuthority())
+                .toList());
         return createToken(claims, userDetails.getUsername());
     }
 
