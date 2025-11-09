@@ -42,7 +42,7 @@
                             </c:choose>
                         </td>
                         <td>
-                            <fmt:formatDate value="${category.createdAt}" pattern="dd/MM/yyyy"/>
+                            ${category.createdAt.dayOfMonth}/${category.createdAt.monthValue}/${category.createdAt.year}
                         </td>
                         <td>
                             <a href="${pageContext.request.contextPath}/admin/categories/${category.id}/edit"

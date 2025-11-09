@@ -50,7 +50,7 @@
                             </c:choose>
                         </td>
                         <td>
-                            <fmt:formatDate value="${user.createdAt}" pattern="dd/MM/yyyy"/>
+                            ${user.createdAt.dayOfMonth}/${user.createdAt.monthValue}/${user.createdAt.year}
                         </td>
                         <td>
                             <a href="${pageContext.request.contextPath}/admin/users/${user.id}"

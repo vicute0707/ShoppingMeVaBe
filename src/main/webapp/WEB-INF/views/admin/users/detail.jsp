@@ -45,7 +45,7 @@
                     </c:choose>
                 </p>
                 <p><strong>Created At:</strong>
-                    <fmt:formatDate value="${user.createdAt}" pattern="dd/MM/yyyy HH:mm"/></p>
+                    ${user.createdAt.dayOfMonth}/${user.createdAt.monthValue}/${user.createdAt.year} ${user.createdAt.hour}:${user.createdAt.minute < 10 ? '0' : ''}${user.createdAt.minute}</p>
             </div>
             <div class="card-footer">
                 <a href="${pageContext.request.contextPath}/admin/users/${user.id}/edit" class="btn btn-warning">
