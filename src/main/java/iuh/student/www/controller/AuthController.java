@@ -26,8 +26,15 @@ public class AuthController {
     public String loginPage(
             @ModelAttribute("error") String error,
             @ModelAttribute("logout") String logout,
+            Authentication authentication,
             Model model
     ) {
+        // Redirect authenticated users away from login page
+        if (authentication != null && authentication.isAuthenticated()
+                && !authentication.getPrincipal().equals("anonymousUser")) {
+            return "redirect:/";
+        }
+
         if (error != null) {
             model.addAttribute("errorMessage", "Invalid email or password");
         }
