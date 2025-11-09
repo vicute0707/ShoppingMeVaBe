@@ -2,25 +2,39 @@ package iuh.student.www.controller;
 
 import iuh.student.www.dto.RegisterDTO;
 import iuh.student.www.entity.User;
+import iuh.student.www.security.CustomUserDetailsService;
+import iuh.student.www.security.JwtUtil;
 import iuh.student.www.service.UserService;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @RequiredArgsConstructor
+@Slf4j
 public class AuthController {
 
     private final UserService userService;
+    private final AuthenticationManager authenticationManager;
+    private final JwtUtil jwtUtil;
+    private final CustomUserDetailsService userDetailsService;
 
     @GetMapping("/login")
     public String loginPage(
@@ -42,6 +56,49 @@ public class AuthController {
             model.addAttribute("successMessage", "You have been logged out successfully");
         }
         return "guest/login";
+    }
+
+    @PostMapping("/perform-login")
+    public String performLogin(
+            @RequestParam("username") String email,
+            @RequestParam("password") String password,
+            HttpServletResponse response,
+            RedirectAttributes redirectAttributes
+    ) {
+        try {
+            // Authenticate user
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(email, password)
+            );
+
+            // Generate JWT token
+            UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+            String jwtToken = jwtUtil.generateToken(userDetails);
+
+            // Store JWT in cookie
+            Cookie jwtCookie = new Cookie("JWT_TOKEN", jwtToken);
+            jwtCookie.setHttpOnly(true);
+            jwtCookie.setPath("/");
+            jwtCookie.setMaxAge(24 * 60 * 60); // 24 hours
+            response.addCookie(jwtCookie);
+
+            log.info("User {} logged in successfully via web form", email);
+
+            // Redirect based on role
+            boolean isAdmin = userDetails.getAuthorities().stream()
+                    .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN"));
+
+            if (isAdmin) {
+                return "redirect:/admin/dashboard";
+            } else {
+                return "redirect:/";
+            }
+
+        } catch (AuthenticationException e) {
+            log.error("Login failed for user {}: {}", email, e.getMessage());
+            redirectAttributes.addFlashAttribute("errorMessage", "Email hoặc mật khẩu không đúng!");
+            return "redirect:/login";
+        }
     }
 
     @GetMapping("/login-success")
@@ -81,6 +138,20 @@ public class AuthController {
             model.addAttribute("errorMessage", e.getMessage());
             return "guest/register";
         }
+    }
+
+    @GetMapping("/logout")
+    public String logout(HttpServletResponse response, RedirectAttributes redirectAttributes) {
+        // Remove JWT cookie
+        Cookie jwtCookie = new Cookie("JWT_TOKEN", null);
+        jwtCookie.setHttpOnly(true);
+        jwtCookie.setPath("/");
+        jwtCookie.setMaxAge(0); // Delete cookie
+        response.addCookie(jwtCookie);
+
+        log.info("User logged out successfully");
+        redirectAttributes.addFlashAttribute("successMessage", "Đăng xuất thành công!");
+        return "redirect:/login";
     }
 
     @GetMapping("/access-denied")

@@ -7,12 +7,26 @@
     <div class="col-md-6">
         <div class="card">
             <div class="card-header">
-                <h3>Login</h3>
+                <h3>Đăng nhập</h3>
             </div>
             <div class="card-body">
-                <form action="${pageContext.request.contextPath}/perform-login" method="post" id="loginForm">
-                    <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
+                <%-- Display error message --%>
+                <c:if test="${not empty errorMessage}">
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        ${errorMessage}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                </c:if>
 
+                <%-- Display success message --%>
+                <c:if test="${not empty successMessage}">
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        ${successMessage}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                </c:if>
+
+                <form action="${pageContext.request.contextPath}/perform-login" method="post" id="loginForm">
                     <div class="mb-3">
                         <label for="email" class="form-label">Email *</label>
                         <input type="email" class="form-control" id="email" name="username"
