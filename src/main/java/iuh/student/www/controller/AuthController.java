@@ -165,6 +165,36 @@ public class AuthController {
         return "redirect:/login";
     }
 
+    /**
+     * Force clear all cookies - Use this if you have login issues
+     */
+    @GetMapping("/clear-cookies")
+    public String clearCookies(HttpServletRequest request, HttpServletResponse response, RedirectAttributes redirectAttributes) {
+        // Clear ALL cookies aggressively
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                // Create new cookie with same name but empty value
+                Cookie deleteCookie = new Cookie(cookie.getName(), "");
+                deleteCookie.setPath("/");
+                deleteCookie.setMaxAge(0);
+                deleteCookie.setHttpOnly(true);
+                response.addCookie(deleteCookie);
+
+                log.info("Deleted cookie: {}", cookie.getName());
+            }
+        }
+
+        // Also add cache control headers to prevent caching
+        response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+        response.setHeader("Pragma", "no-cache");
+        response.setHeader("Expires", "0");
+
+        log.info("All cookies forcefully cleared!");
+        redirectAttributes.addFlashAttribute("successMessage", "Đã xóa tất cả cookies! Bạn có thể đăng nhập lại.");
+        return "redirect:/login";
+    }
+
     @GetMapping("/access-denied")
     public String accessDenied() {
         return "common/access-denied";
