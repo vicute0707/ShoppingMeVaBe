@@ -50,6 +50,7 @@ public class SecurityConfig {
                         // Public access (Guest) - Web Pages
                         .requestMatchers("/", "/home", "/products/**", "/cart/**", "/register", "/login").permitAll()
                         .requestMatchers("/css/**", "/js/**", "/images/**", "/h2-console/**").permitAll()
+                        .requestMatchers("/WEB-INF/**").permitAll()  // Allow internal JSP forwards
 
                         // Public REST APIs (Guest)
                         .requestMatchers("/api/public/**", "/api/auth/**").permitAll()
