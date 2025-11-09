@@ -144,28 +144,43 @@ public class AuthController {
     }
 
     @GetMapping("/logout")
-    public String logout(HttpServletRequest request, HttpServletResponse response, RedirectAttributes redirectAttributes) {
-        // Clear JWT cookie - multiple attempts to ensure it's cleared
-        Cookie jwtCookie = new Cookie("JWT_TOKEN", "");
+    public String logout(HttpServletRequest request, HttpServletResponse response,
+                        Authentication authentication, RedirectAttributes redirectAttributes) {
+        // Clear Spring Security Context first
+        if (authentication != null) {
+            new org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler()
+                    .logout(request, response, authentication);
+            log.info("User {} logged out - SecurityContext cleared", authentication.getName());
+        }
+
+        // Clear JWT cookie
+        Cookie jwtCookie = new Cookie("JWT_TOKEN", null);
         jwtCookie.setHttpOnly(true);
         jwtCookie.setPath("/");
         jwtCookie.setMaxAge(0); // Delete immediately
         response.addCookie(jwtCookie);
 
-        // Also try to clear JSESSIONID if exists
+        // Clear all other cookies
         Cookie[] cookies = request.getCookies();
         if (cookies != null) {
             for (Cookie cookie : cookies) {
-                cookie.setValue("");
-                cookie.setPath("/");
-                cookie.setMaxAge(0);
-                response.addCookie(cookie);
+                Cookie deleteCookie = new Cookie(cookie.getName(), null);
+                deleteCookie.setPath("/");
+                deleteCookie.setMaxAge(0);
+                response.addCookie(deleteCookie);
+                log.debug("Deleted cookie: {}", cookie.getName());
             }
         }
 
-        log.info("User logged out successfully - All cookies cleared");
-        redirectAttributes.addFlashAttribute("successMessage", "Đăng xuất thành công!");
-        return "redirect:/login";
+        // Add cache control headers to prevent caching
+        response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+        response.setHeader("Pragma", "no-cache");
+        response.setHeader("Expires", "0");
+
+        log.info("Logout completed - All cookies cleared");
+
+        // Return logout page that will clear cookies with JavaScript and redirect
+        return "guest/logout";
     }
 
     /**
