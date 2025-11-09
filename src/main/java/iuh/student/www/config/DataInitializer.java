@@ -27,8 +27,25 @@ public class DataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        // Tạo admin account nếu chưa tồn tại
-        if (!userRepository.findByEmail("admin@shopmevabe.com").isPresent()) {
+        // Tạo hoặc cập nhật admin account
+        var existingAdmin = userRepository.findByEmail("admin@shopmevabe.com");
+
+        if (existingAdmin.isPresent()) {
+            // Cập nhật mật khẩu admin (đảm bảo luôn dùng mật khẩu mới)
+            User admin = existingAdmin.get();
+            admin.setPassword(passwordEncoder.encode("admin123"));
+            admin.setRole(User.Role.ADMIN);
+            admin.setEnabled(true);
+            admin.setFullName("Admin Shop Mẹ và Bé");
+            userRepository.save(admin);
+
+            log.info("========================================");
+            log.info("🔄 Admin Account Updated!");
+            log.info("📧 Email: admin@shopmevabe.com");
+            log.info("🔑 Password: admin123 (RESET)");
+            log.info("========================================");
+        } else {
+            // Tạo mới admin account
             User admin = User.builder()
                     .fullName("Admin Shop Mẹ và Bé")
                     .email("admin@shopmevabe.com")
@@ -46,8 +63,6 @@ public class DataInitializer implements CommandLineRunner {
             log.info("📧 Email: admin@shopmevabe.com");
             log.info("🔑 Password: admin123");
             log.info("========================================");
-        } else {
-            log.info("ℹ️ Admin account already exists: admin@shopmevabe.com");
         }
     }
 }
