@@ -56,10 +56,14 @@ public class SecurityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS) // Không dùng session
                 )
                 .authorizeHttpRequests(authorize -> authorize
-                        // Public endpoints
-                        .requestMatchers("/", "/home", "/error").permitAll()
-                        .requestMatchers("/css/**", "/js/**", "/images/**", "/favicon.ico").permitAll()
+                        // Public endpoints - Static resources
+                        .requestMatchers("/css/**", "/js/**", "/images/**", "/favicon.ico", "/webjars/**").permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
+
+                        // Public web pages - Thymeleaf views (cho phép truy cập tất cả trang web)
+                        .requestMatchers("/", "/home", "/error", "/login", "/register").permitAll()
+                        .requestMatchers("/products", "/products/**", "/categories", "/categories/**").permitAll()
+                        .requestMatchers("/cart", "/cart/**", "/checkout", "/about", "/contact").permitAll()
 
                         // Authentication APIs - Public
                         .requestMatchers("/api/auth/**").permitAll()
@@ -74,14 +78,17 @@ public class SecurityConfig {
                         // MoMo Payment - Public callbacks
                         .requestMatchers("/payment/momo/callback", "/payment/momo/ipn").permitAll()
 
+                        // Customer web pages - Authenticated
+                        .requestMatchers("/orders", "/orders/**", "/profile", "/profile/**").hasAnyRole("CUSTOMER", "ADMIN")
+
                         // Customer APIs - Authenticated
                         .requestMatchers("/api/customer/**").hasAnyRole("CUSTOMER", "ADMIN")
                         .requestMatchers("/api/orders/**").hasAnyRole("CUSTOMER", "ADMIN")
                         .requestMatchers("/payment/momo/create/**").hasAnyRole("CUSTOMER", "ADMIN")
 
-                        // Admin APIs - Admin only
-                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        // Admin web pages & APIs - Admin only
                         .requestMatchers("/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
 
                         // All other requests need authentication
                         .anyRequest().authenticated()
