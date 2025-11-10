@@ -1,5 +1,6 @@
 package iuh.student.www.service;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -15,28 +16,33 @@ import java.util.UUID;
 
 /**
  * Service để xử lý upload và lưu trữ file ảnh
- * Lưu file vào thư mục static/uploads/ để có thể serve qua web
+ * Ưu tiên upload lên Cloudinary, fallback về local nếu Cloudinary không available
  */
 @Service
+@RequiredArgsConstructor
 @Slf4j
 public class FileStorageService {
 
+    private final CloudinaryService cloudinaryService;
     private final Path fileStorageLocation;
 
-    public FileStorageService(@Value("${file.upload-dir:src/main/resources/static/uploads/products}") String uploadDir) {
+    public FileStorageService(CloudinaryService cloudinaryService,
+                              @Value("${file.upload-dir:src/main/resources/static/uploads/products}") String uploadDir) {
+        this.cloudinaryService = cloudinaryService;
         this.fileStorageLocation = Paths.get(uploadDir).toAbsolutePath().normalize();
 
         try {
             Files.createDirectories(this.fileStorageLocation);
-            log.info("✅ Created upload directory: {}", this.fileStorageLocation);
+            log.info("Created upload directory: {}", this.fileStorageLocation);
         } catch (Exception ex) {
-            log.error("❌ Could not create upload directory!", ex);
+            log.error("Could not create upload directory!", ex);
             throw new RuntimeException("Could not create upload directory!", ex);
         }
     }
 
     /**
      * Lưu file ảnh và trả về URL để lưu vào database
+     * Ưu tiên upload lên Cloudinary, fallback về local nếu Cloudinary không available
      */
     public String storeProductImage(MultipartFile file) {
         if (file == null || file.isEmpty()) {
@@ -47,44 +53,62 @@ public class FileStorageService {
             // Validate file
             validateImageFile(file);
 
-            // Generate unique filename
+            // Try uploading to Cloudinary first
+            if (cloudinaryService.isEnabled()) {
+                try {
+                    String cloudinaryUrl = cloudinaryService.uploadImage(file, "products");
+                    if (cloudinaryUrl != null && !cloudinaryUrl.isEmpty()) {
+                        log.info("Saved image to Cloudinary: {}", cloudinaryUrl);
+                        return cloudinaryUrl;
+                    }
+                } catch (IOException e) {
+                    log.warn("Failed to upload to Cloudinary, falling back to local storage: {}", e.getMessage());
+                }
+            }
+
+            // Fallback to local storage
             String originalFilename = StringUtils.cleanPath(file.getOriginalFilename());
             String fileExtension = getFileExtension(originalFilename);
             String newFilename = UUID.randomUUID().toString() + fileExtension;
 
-            // Copy file to target location
             Path targetLocation = this.fileStorageLocation.resolve(newFilename);
             Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
 
-            log.info("✅ Saved image: {} → {}", originalFilename, newFilename);
-
-            // Return web-accessible URL
+            log.info("Saved image to local storage: {}", newFilename);
             return "/uploads/products/" + newFilename;
 
         } catch (IOException ex) {
-            log.error("❌ Failed to store file: {}", file.getOriginalFilename(), ex);
+            log.error("Failed to store file: {}", file.getOriginalFilename(), ex);
             throw new RuntimeException("Lỗi khi lưu file ảnh: " + file.getOriginalFilename(), ex);
         }
     }
 
     /**
      * Xóa file ảnh cũ khi update product
+     * Tự động detect là Cloudinary URL hay local file
      */
     public void deleteFile(String fileUrl) {
         if (fileUrl == null || fileUrl.isEmpty()) {
             return;
         }
 
+        // Check if it's a Cloudinary URL
+        if (fileUrl.contains("cloudinary.com")) {
+            cloudinaryService.deleteImage(fileUrl);
+            return;
+        }
+
+        // Handle local file
         try {
             // Extract filename from URL: /uploads/products/xxx.jpg → xxx.jpg
             String filename = fileUrl.substring(fileUrl.lastIndexOf("/") + 1);
             Path filePath = this.fileStorageLocation.resolve(filename);
 
             Files.deleteIfExists(filePath);
-            log.info("🗑️ Deleted old image: {}", filename);
+            log.info("Deleted old image: {}", filename);
 
-        } catch (IOException ex) {
-            log.warn("⚠️ Failed to delete file: {}", fileUrl, ex);
+        } catch (Exception ex) {
+            log.warn("Failed to delete file: {}", fileUrl, ex);
             // Don't throw exception, just log warning
         }
     }

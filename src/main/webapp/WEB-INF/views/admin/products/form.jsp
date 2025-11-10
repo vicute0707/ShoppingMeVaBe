@@ -225,14 +225,14 @@
 
                     <div class="mb-4">
                         <label class="form-label"><i class="fas fa-image"></i> Hình ảnh sản phẩm</label>
-                        <div class="image-upload-area" onclick="document.getElementById('imageFile').click();">
-                            <label for="imageFile">
+                        <div class="image-upload-area" onclick="event.stopPropagation(); document.getElementById('imageFile').click();">
+                            <div class="upload-content">
                                 <div class="upload-icon"><i class="fas fa-camera"></i></div>
                                 <p style="margin: 0; color: var(--text-dark); font-weight: 600;">
                                     Nhấn để chọn ảnh từ máy tính
                                 </p>
                                 <small class="text-muted">Chấp nhận: JPG, PNG, GIF (Tối đa 5MB)</small>
-                            </label>
+                            </div>
                         </div>
                         <input type="file" id="imageFile" name="imageFile"
                                accept="image/*" style="display: none;" onchange="previewImage(event)"/>
@@ -246,9 +246,18 @@
                                 <p style="margin-bottom: 10px; color: var(--text-dark);">
                                     <strong>Ảnh hiện tại:</strong>
                                 </p>
-                                <img src="${pageContext.request.contextPath}${product.imageUrl}"
-                                     alt="${product.name}"
-                                     style="max-width: 300px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);"/>
+                                <c:choose>
+                                    <c:when test="${product.imageUrl.startsWith('http://') || product.imageUrl.startsWith('https://')}">
+                                        <img src="${product.imageUrl}"
+                                             alt="${product.name}"
+                                             style="max-width: 300px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);"/>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <img src="${pageContext.request.contextPath}${product.imageUrl}"
+                                             alt="${product.name}"
+                                             style="max-width: 300px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);"/>
+                                    </c:otherwise>
+                                </c:choose>
                             </div>
                         </c:if>
 
