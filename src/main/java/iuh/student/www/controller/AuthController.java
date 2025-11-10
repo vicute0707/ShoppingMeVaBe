@@ -207,8 +207,9 @@ public class AuthController {
 
         log.info("Logout completed successfully for user: {}", username);
 
-        // Return logout page that will redirect to login
-        return "guest/logout";
+        // Redirect directly to login page with logout parameter
+        redirectAttributes.addFlashAttribute("successMessage", "Đăng xuất thành công!");
+        return "redirect:/login?logout=true";
     }
 
     /**
