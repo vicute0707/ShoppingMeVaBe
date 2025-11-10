@@ -185,19 +185,87 @@
 </style>
 
 <div class="page-header">
-    <h2>📦 Quản lý sản phẩm</h2>
+    <h2><i class="fas fa-boxes"></i> Quản lý sản phẩm</h2>
     <a href="${pageContext.request.contextPath}/admin/products/new" class="btn btn-primary float-animation">
-        <i class="fas fa-plus"></i> 🎀 Thêm sản phẩm mới
+        <i class="fas fa-plus-circle"></i> Thêm sản phẩm mới
     </a>
 </div>
 
 <div class="search-box-container">
-    <form action="${pageContext.request.contextPath}/admin/products" method="get" class="search-form">
-        <input type="search" name="search" class="form-control"
-               placeholder="🔍 Tìm kiếm sản phẩm..." value="${search}">
-        <button type="submit" class="btn btn-primary">
-            <i class="fas fa-search"></i> Tìm kiếm
-        </button>
+    <form action="${pageContext.request.contextPath}/admin/products" method="get" class="search-form" id="filterForm">
+        <div class="row g-3">
+            <div class="col-md-4">
+                <div class="input-group">
+                    <span class="input-group-text" style="background: var(--pastel-purple); color: white; border: 2px solid var(--pastel-purple); border-radius: 20px 0 0 20px;">
+                        <i class="fas fa-search"></i>
+                    </span>
+                    <input type="search" name="search" class="form-control" style="border-radius: 0 20px 20px 0;"
+                           placeholder="Tìm kiếm sản phẩm..." value="${search}">
+                </div>
+            </div>
+
+            <div class="col-md-2">
+                <div class="input-group">
+                    <span class="input-group-text" style="background: var(--pastel-blue); color: white; border: 2px solid var(--pastel-blue); border-radius: 20px 0 0 20px;">
+                        <i class="fas fa-folder"></i>
+                    </span>
+                    <select name="categoryId" class="form-select" style="border-radius: 0 20px 20px 0;">
+                        <option value="">Tất cả danh mục</option>
+                        <c:forEach items="${categories}" var="cat">
+                            <option value="${cat.id}" <c:if test="${categoryId == cat.id}">selected</c:if>>
+                                ${cat.name}
+                            </option>
+                        </c:forEach>
+                    </select>
+                </div>
+            </div>
+
+            <div class="col-md-2">
+                <div class="input-group">
+                    <span class="input-group-text" style="background: var(--pastel-green); color: white; border: 2px solid var(--pastel-green); border-radius: 20px 0 0 20px;">
+                        <i class="fas fa-toggle-on"></i>
+                    </span>
+                    <select name="active" class="form-select" style="border-radius: 0 20px 20px 0;">
+                        <option value="">Tất cả trạng thái</option>
+                        <option value="true" <c:if test="${active == true}">selected</c:if>>Đang bán</option>
+                        <option value="false" <c:if test="${active == false}">selected</c:if>>Đã ẩn</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="col-md-2">
+                <div class="input-group">
+                    <span class="input-group-text" style="background: var(--pastel-yellow); color: var(--text-dark); border: 2px solid var(--pastel-yellow); border-radius: 20px 0 0 20px;">
+                        <i class="fas fa-sort"></i>
+                    </span>
+                    <select name="sortBy" class="form-select" style="border-radius: 0 20px 20px 0;">
+                        <option value="">Sắp xếp</option>
+                        <option value="priceAsc" <c:if test="${sortBy == 'priceAsc'}">selected</c:if>>Giá tăng dần</option>
+                        <option value="priceDesc" <c:if test="${sortBy == 'priceDesc'}">selected</c:if>>Giá giảm dần</option>
+                        <option value="nameAsc" <c:if test="${sortBy == 'nameAsc'}">selected</c:if>>Tên A-Z</option>
+                        <option value="nameDesc" <c:if test="${sortBy == 'nameDesc'}">selected</c:if>>Tên Z-A</option>
+                        <option value="stockAsc" <c:if test="${sortBy == 'stockAsc'}">selected</c:if>>Kho tăng dần</option>
+                        <option value="stockDesc" <c:if test="${sortBy == 'stockDesc'}">selected</c:if>>Kho giảm dần</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="fas fa-filter"></i> Lọc
+                </button>
+            </div>
+        </div>
+
+        <c:if test="${search != null || categoryId != null || active != null || sortBy != null}">
+            <div class="row mt-3">
+                <div class="col-12 text-center">
+                    <a href="${pageContext.request.contextPath}/admin/products" class="btn btn-secondary">
+                        <i class="fas fa-times"></i> Xóa bộ lọc
+                    </a>
+                </div>
+            </div>
+        </c:if>
     </form>
 </div>
 
@@ -205,7 +273,7 @@
     <c:when test="${products.size() > 0}">
         <div class="product-list-container">
             <div style="margin-bottom: 20px; color: var(--text-medium); font-weight: 600;">
-                💫 Tìm thấy ${products.size()} sản phẩm
+                <i class="fas fa-star"></i> Tìm thấy ${products.size()} sản phẩm
             </div>
 
             <div class="product-grid">
@@ -220,7 +288,7 @@
                                 </c:when>
                                 <c:otherwise>
                                     <div style="display: flex; align-items: center; justify-content: center; height: 100%; font-size: 60px; color: var(--pastel-purple);">
-                                        🖼️
+                                        <i class="fas fa-image"></i>
                                     </div>
                                 </c:otherwise>
                             </c:choose>
@@ -236,21 +304,21 @@
                             </div>
 
                             <div class="product-category">
-                                📁 ${product.category.name}
+                                <i class="fas fa-folder"></i> ${product.category.name}
                             </div>
 
                             <div class="product-price">
-                                💰 <fmt:formatNumber value="${product.price}" pattern="#,##0.00"/>đ
+                                <i class="fas fa-tag"></i> <fmt:formatNumber value="${product.price}" pattern="#,##0.00"/>đ
                             </div>
 
                             <div class="product-stock">
-                                📦 Kho: ${product.stockQuantity}
+                                <i class="fas fa-box"></i> Kho: ${product.stockQuantity}
                                 <c:choose>
                                     <c:when test="${product.active}">
-                                        <span class="badge bg-success" style="margin-left: 10px;">✅ Đang bán</span>
+                                        <span class="badge bg-success" style="margin-left: 10px;"><i class="fas fa-check-circle"></i> Đang bán</span>
                                     </c:when>
                                     <c:otherwise>
-                                        <span class="badge bg-secondary" style="margin-left: 10px;">❌ Đã ẩn</span>
+                                        <span class="badge bg-secondary" style="margin-left: 10px;"><i class="fas fa-eye-slash"></i> Đã ẩn</span>
                                     </c:otherwise>
                                 </c:choose>
                             </div>
@@ -262,10 +330,10 @@
                                 </a>
                                 <form action="${pageContext.request.contextPath}/admin/products/${product.id}/delete"
                                       method="post" style="flex: 1;"
-                                      onsubmit="return confirm('🗑️ Bạn chắc chắn muốn xóa sản phẩm này?')">
+                                      onsubmit="return confirm('Bạn chắc chắn muốn xóa sản phẩm này?')">
                                     <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
                                     <button type="submit" class="btn btn-danger w-100">
-                                        <i class="fas fa-trash"></i> Xóa
+                                        <i class="fas fa-trash-alt"></i> Xóa
                                     </button>
                                 </form>
                             </div>
@@ -277,7 +345,7 @@
     </c:when>
     <c:otherwise>
         <div class="no-products">
-            <div class="no-products-icon">🔍</div>
+            <div class="no-products-icon"><i class="fas fa-search"></i></div>
             <h3 style="color: var(--text-dark); margin-bottom: 15px;">
                 Không tìm thấy sản phẩm nào
             </h3>
@@ -292,7 +360,7 @@
                 </c:choose>
             </p>
             <a href="${pageContext.request.contextPath}/admin/products/new" class="btn btn-primary">
-                <i class="fas fa-plus"></i> 🎀 Thêm sản phẩm ngay
+                <i class="fas fa-plus-circle"></i> Thêm sản phẩm ngay
             </a>
         </div>
     </c:otherwise>

@@ -28,9 +28,16 @@ public class AdminProductController {
     private final FileStorageService fileStorageService;
 
     @GetMapping
-    public String listProducts(@RequestParam(required = false) String search, Model model) {
+    public String listProducts(
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) Long categoryId,
+            @RequestParam(required = false) Boolean active,
+            @RequestParam(required = false) String sortBy,
+            Model model
+    ) {
         List<Product> products;
 
+        // Apply filters
         if (search != null && !search.trim().isEmpty()) {
             products = productService.searchAllProducts(search);
             model.addAttribute("search", search);
@@ -38,7 +45,50 @@ public class AdminProductController {
             products = productService.getAllProducts();
         }
 
+        // Filter by category
+        if (categoryId != null) {
+            products = products.stream()
+                    .filter(p -> p.getCategory().getId().equals(categoryId))
+                    .collect(java.util.stream.Collectors.toList());
+            model.addAttribute("categoryId", categoryId);
+        }
+
+        // Filter by status
+        if (active != null) {
+            products = products.stream()
+                    .filter(p -> p.getActive().equals(active))
+                    .collect(java.util.stream.Collectors.toList());
+            model.addAttribute("active", active);
+        }
+
+        // Sort products
+        if (sortBy != null && !sortBy.isEmpty()) {
+            switch (sortBy) {
+                case "priceAsc":
+                    products.sort((a, b) -> a.getPrice().compareTo(b.getPrice()));
+                    break;
+                case "priceDesc":
+                    products.sort((a, b) -> b.getPrice().compareTo(a.getPrice()));
+                    break;
+                case "nameAsc":
+                    products.sort((a, b) -> a.getName().compareTo(b.getName()));
+                    break;
+                case "nameDesc":
+                    products.sort((a, b) -> b.getName().compareTo(a.getName()));
+                    break;
+                case "stockAsc":
+                    products.sort((a, b) -> a.getStockQuantity().compareTo(b.getStockQuantity()));
+                    break;
+                case "stockDesc":
+                    products.sort((a, b) -> b.getStockQuantity().compareTo(a.getStockQuantity()));
+                    break;
+            }
+            model.addAttribute("sortBy", sortBy);
+        }
+
+        List<Category> categories = categoryService.getAllCategories();
         model.addAttribute("products", products);
+        model.addAttribute("categories", categories);
         return "admin/products/list";
     }
 
