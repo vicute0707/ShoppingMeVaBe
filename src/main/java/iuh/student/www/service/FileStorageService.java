@@ -1,7 +1,7 @@
 package iuh.student.www.service;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -19,13 +19,13 @@ import java.util.UUID;
  * Ưu tiên upload lên Cloudinary, fallback về local nếu Cloudinary không available
  */
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class FileStorageService {
 
     private final CloudinaryService cloudinaryService;
     private final Path fileStorageLocation;
 
+    @Autowired
     public FileStorageService(CloudinaryService cloudinaryService,
                               @Value("${file.upload-dir:src/main/resources/static/uploads/products}") String uploadDir) {
         this.cloudinaryService = cloudinaryService;
