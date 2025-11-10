@@ -150,7 +150,14 @@ public class AuthController {
         String username = authentication != null ? authentication.getName() : "anonymous";
         log.info("Starting logout process for user: {}", username);
 
-        // Step 1: Invalidate HTTP Session (to remove JSESSIONID)
+        // Step 1: Clear Spring Security Context FIRST
+        if (authentication != null) {
+            new org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler()
+                    .logout(request, response, authentication);
+            log.info("SecurityContext cleared for user: {}", username);
+        }
+
+        // Step 2: Invalidate HTTP Session (to remove JSESSIONID)
         try {
             if (request.getSession(false) != null) {
                 request.getSession().invalidate();
@@ -160,56 +167,72 @@ public class AuthController {
             log.warn("Failed to invalidate session: {}", e.getMessage());
         }
 
-        // Step 2: Clear Spring Security Context
-        if (authentication != null) {
-            new org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler()
-                    .logout(request, response, authentication);
-            log.info("SecurityContext cleared for user: {}", username);
-        }
+        // Step 3: Aggressively delete JWT_TOKEN cookie with multiple variations
+        // This ensures the cookie is deleted regardless of how it was set
+        deleteCookieAllVariants(response, "JWT_TOKEN");
+        log.info("JWT_TOKEN cookie deleted with all variants");
 
-        // Step 3: Clear all cookies with proper attributes
+        // Step 4: Aggressively delete JSESSIONID cookie with multiple variations
+        deleteCookieAllVariants(response, "JSESSIONID");
+        log.info("JSESSIONID cookie deleted with all variants");
+
+        // Step 5: Delete all other cookies
         Cookie[] cookies = request.getCookies();
         if (cookies != null) {
             for (Cookie cookie : cookies) {
                 String cookieName = cookie.getName();
-
-                // Delete cookie with original path
-                Cookie deleteCookie = new Cookie(cookieName, "");
-                deleteCookie.setPath("/");
-                deleteCookie.setMaxAge(0);
-                deleteCookie.setHttpOnly(true); // Important: Must match original cookie settings
-                response.addCookie(deleteCookie);
-
-                log.info("Deleted cookie: {} (path=/, httpOnly=true)", cookieName);
+                if (!cookieName.equals("JWT_TOKEN") && !cookieName.equals("JSESSIONID")) {
+                    deleteCookieAllVariants(response, cookieName);
+                    log.info("Deleted cookie: {}", cookieName);
+                }
             }
         }
 
-        // Step 4: Explicitly delete JSESSIONID (in case it wasn't in cookies array)
-        Cookie jsessionCookie = new Cookie("JSESSIONID", "");
-        jsessionCookie.setPath("/");
-        jsessionCookie.setMaxAge(0);
-        jsessionCookie.setHttpOnly(true);
-        response.addCookie(jsessionCookie);
-        log.info("Explicitly deleted JSESSIONID cookie");
-
-        // Step 5: Explicitly delete JWT_TOKEN (in case it wasn't in cookies array)
-        Cookie jwtCookie = new Cookie("JWT_TOKEN", "");
-        jwtCookie.setPath("/");
-        jwtCookie.setMaxAge(0);
-        jwtCookie.setHttpOnly(true);
-        response.addCookie(jwtCookie);
-        log.info("Explicitly deleted JWT_TOKEN cookie");
-
         // Step 6: Add cache control headers to prevent caching
-        response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+        response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate, private");
         response.setHeader("Pragma", "no-cache");
         response.setHeader("Expires", "0");
+        response.setHeader("Clear-Site-Data", "\"cache\", \"cookies\", \"storage\"");
 
         log.info("Logout completed successfully for user: {}", username);
 
         // Redirect directly to login page with logout parameter
         redirectAttributes.addFlashAttribute("successMessage", "Đăng xuất thành công!");
         return "redirect:/login?logout=true";
+    }
+
+    /**
+     * Helper method to delete a cookie with all possible variations
+     * This ensures the cookie is deleted regardless of how it was originally set
+     */
+    private void deleteCookieAllVariants(HttpServletResponse response, String cookieName) {
+        // Variant 1: Basic deletion (path=/, no HttpOnly)
+        Cookie cookie1 = new Cookie(cookieName, null);
+        cookie1.setPath("/");
+        cookie1.setMaxAge(0);
+        response.addCookie(cookie1);
+
+        // Variant 2: With HttpOnly flag
+        Cookie cookie2 = new Cookie(cookieName, "");
+        cookie2.setPath("/");
+        cookie2.setMaxAge(0);
+        cookie2.setHttpOnly(true);
+        response.addCookie(cookie2);
+
+        // Variant 3: With Secure flag (for HTTPS)
+        Cookie cookie3 = new Cookie(cookieName, "");
+        cookie3.setPath("/");
+        cookie3.setMaxAge(0);
+        cookie3.setSecure(true);
+        response.addCookie(cookie3);
+
+        // Variant 4: With both HttpOnly and Secure
+        Cookie cookie4 = new Cookie(cookieName, "");
+        cookie4.setPath("/");
+        cookie4.setMaxAge(0);
+        cookie4.setHttpOnly(true);
+        cookie4.setSecure(true);
+        response.addCookie(cookie4);
     }
 
     /**
@@ -222,7 +245,14 @@ public class AuthController {
 
         log.info("Starting aggressive cookie cleanup");
 
-        // Step 1: Invalidate HTTP Session if exists
+        // Step 1: Clear Spring Security Context if authenticated
+        if (authentication != null) {
+            new org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler()
+                    .logout(request, response, authentication);
+            log.info("SecurityContext cleared during cookie cleanup");
+        }
+
+        // Step 2: Invalidate HTTP Session if exists
         try {
             if (request.getSession(false) != null) {
                 request.getSession().invalidate();
@@ -232,50 +262,31 @@ public class AuthController {
             log.warn("Failed to invalidate session during cleanup: {}", e.getMessage());
         }
 
-        // Step 2: Clear Spring Security Context if authenticated
-        if (authentication != null) {
-            new org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler()
-                    .logout(request, response, authentication);
-            log.info("SecurityContext cleared during cookie cleanup");
-        }
+        // Step 3: Delete JWT_TOKEN with all variants
+        deleteCookieAllVariants(response, "JWT_TOKEN");
+        log.info("JWT_TOKEN deleted with all variants during cleanup");
 
-        // Step 3: Clear ALL cookies aggressively
+        // Step 4: Delete JSESSIONID with all variants
+        deleteCookieAllVariants(response, "JSESSIONID");
+        log.info("JSESSIONID deleted with all variants during cleanup");
+
+        // Step 5: Clear ALL other cookies
         Cookie[] cookies = request.getCookies();
         if (cookies != null) {
             for (Cookie cookie : cookies) {
                 String cookieName = cookie.getName();
-
-                // Delete cookie with HttpOnly flag
-                Cookie deleteCookie = new Cookie(cookieName, "");
-                deleteCookie.setPath("/");
-                deleteCookie.setMaxAge(0);
-                deleteCookie.setHttpOnly(true);
-                response.addCookie(deleteCookie);
-
-                log.info("Forcefully deleted cookie: {} (httpOnly=true)", cookieName);
+                if (!cookieName.equals("JWT_TOKEN") && !cookieName.equals("JSESSIONID")) {
+                    deleteCookieAllVariants(response, cookieName);
+                    log.info("Forcefully deleted cookie: {}", cookieName);
+                }
             }
         }
 
-        // Step 4: Explicitly delete JSESSIONID
-        Cookie jsessionCookie = new Cookie("JSESSIONID", "");
-        jsessionCookie.setPath("/");
-        jsessionCookie.setMaxAge(0);
-        jsessionCookie.setHttpOnly(true);
-        response.addCookie(jsessionCookie);
-        log.info("Explicitly deleted JSESSIONID during cleanup");
-
-        // Step 5: Explicitly delete JWT_TOKEN
-        Cookie jwtCookie = new Cookie("JWT_TOKEN", "");
-        jwtCookie.setPath("/");
-        jwtCookie.setMaxAge(0);
-        jwtCookie.setHttpOnly(true);
-        response.addCookie(jwtCookie);
-        log.info("Explicitly deleted JWT_TOKEN during cleanup");
-
-        // Step 6: Add cache control headers
-        response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+        // Step 6: Add cache control headers and Clear-Site-Data
+        response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate, private");
         response.setHeader("Pragma", "no-cache");
         response.setHeader("Expires", "0");
+        response.setHeader("Clear-Site-Data", "\"cache\", \"cookies\", \"storage\"");
 
         log.info("Aggressive cookie cleanup completed successfully!");
         redirectAttributes.addFlashAttribute("successMessage",
