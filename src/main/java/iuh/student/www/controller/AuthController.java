@@ -143,74 +143,10 @@ public class AuthController {
         }
     }
 
-    @GetMapping("/logout")
-    public String logout(HttpServletRequest request, HttpServletResponse response,
-                        Authentication authentication, RedirectAttributes redirectAttributes) {
-
-        String username = authentication != null ? authentication.getName() : "anonymous";
-        log.info("Starting logout process for user: {}", username);
-
-        // Step 1: Explicitly delete JWT_TOKEN cookie FIRST (most important!)
-        // Must match EXACTLY how it was created in perform-login
-        Cookie jwtCookie = new Cookie("JWT_TOKEN", "");
-        jwtCookie.setHttpOnly(true);
-        jwtCookie.setPath("/");
-        jwtCookie.setMaxAge(0); // Delete immediately
-        response.addCookie(jwtCookie);
-        log.info("JWT_TOKEN cookie deleted (HttpOnly=true, Path=/)");
-
-        // Step 2: Delete JSESSIONID cookie
-        Cookie jsessionCookie = new Cookie("JSESSIONID", "");
-        jsessionCookie.setHttpOnly(true);
-        jsessionCookie.setPath("/");
-        jsessionCookie.setMaxAge(0);
-        response.addCookie(jsessionCookie);
-        log.info("JSESSIONID cookie deleted");
-
-        // Step 3: Delete all other cookies
-        Cookie[] cookies = request.getCookies();
-        if (cookies != null) {
-            for (Cookie cookie : cookies) {
-                String cookieName = cookie.getName();
-                if (!cookieName.equals("JWT_TOKEN") && !cookieName.equals("JSESSIONID")) {
-                    Cookie deleteCookie = new Cookie(cookieName, "");
-                    deleteCookie.setPath("/");
-                    deleteCookie.setMaxAge(0);
-                    deleteCookie.setHttpOnly(true);
-                    response.addCookie(deleteCookie);
-                    log.info("Deleted cookie: {}", cookieName);
-                }
-            }
-        }
-
-        // Step 4: Clear Spring Security Context
-        if (authentication != null) {
-            new org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler()
-                    .logout(request, response, authentication);
-            log.info("SecurityContext cleared for user: {}", username);
-        }
-
-        // Step 5: Invalidate HTTP Session (to remove JSESSIONID from server)
-        try {
-            if (request.getSession(false) != null) {
-                request.getSession().invalidate();
-                log.info("HTTP Session invalidated for user: {}", username);
-            }
-        } catch (Exception e) {
-            log.warn("Failed to invalidate session: {}", e.getMessage());
-        }
-
-        // Step 6: Add headers to force browser to clear everything
-        response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate, private");
-        response.setHeader("Pragma", "no-cache");
-        response.setHeader("Expires", "0");
-
-        log.info("=== LOGOUT COMPLETED for user: {} ===", username);
-
-        // Redirect directly to login page
-        redirectAttributes.addFlashAttribute("successMessage", "Đăng xuất thành công!");
-        return "redirect:/login?logout=true";
-    }
+    /**
+     * NOTE: /logout endpoint is now handled by Spring Security (see SecurityConfig)
+     * Custom logout logic is in CustomLogoutHandler
+     */
 
     /**
      * Force clear all cookies - Use this if you have login issues

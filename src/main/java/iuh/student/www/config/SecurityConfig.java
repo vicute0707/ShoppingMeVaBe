@@ -1,5 +1,6 @@
 package iuh.student.www.config;
 
+import iuh.student.www.security.CustomLogoutHandler;
 import iuh.student.www.security.CustomUserDetailsService;
 import iuh.student.www.security.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +30,7 @@ public class SecurityConfig {
 
     private final CustomUserDetailsService userDetailsService;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final CustomLogoutHandler customLogoutHandler;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -94,6 +96,15 @@ public class SecurityConfig {
 
                         // All other requests are permitted (for web views)
                         .anyRequest().permitAll()
+                )
+                // Configure logout - Use custom handler to properly delete cookies
+                .logout(logout -> logout
+                        .logoutUrl("/logout")
+                        .logoutSuccessUrl("/login?logout=true")
+                        .addLogoutHandler(customLogoutHandler) // Custom handler to delete cookies
+                        .invalidateHttpSession(true)
+                        .clearAuthentication(true)
+                        .permitAll()
                 )
                 // Add JWT filter before UsernamePasswordAuthenticationFilter
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
