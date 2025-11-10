@@ -16,7 +16,10 @@
     <div class="col-md-6">
         <c:choose>
             <c:when test="${product.imageUrl != null && !product.imageUrl.isEmpty()}">
-                <img src="${product.imageUrl}" class="img-fluid rounded" alt="${product.name}">
+                <div style="height: 400px; background-color: #f8f9fa; display: flex; align-items: center; justify-content: center; padding: 20px; border-radius: 0.25rem;">
+                    <img src="${product.imageUrl}" class="img-fluid" alt="${product.name}"
+                         style="max-height: 100%; max-width: 100%; object-fit: contain;">
+                </div>
             </c:when>
             <c:otherwise>
                 <div class="bg-secondary d-flex align-items-center justify-content-center rounded"
