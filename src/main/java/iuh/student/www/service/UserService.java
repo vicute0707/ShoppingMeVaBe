@@ -23,12 +23,22 @@ public class UserService {
     public User registerUser(RegisterDTO registerDTO) throws Exception {
         // Check if email already exists
         if (userRepository.existsByEmail(registerDTO.getEmail())) {
-            throw new Exception("Email already exists");
+            throw new Exception("Email đã tồn tại trong hệ thống");
         }
 
         // Check if passwords match
         if (!registerDTO.getPassword().equals(registerDTO.getConfirmPassword())) {
-            throw new Exception("Passwords do not match");
+            throw new Exception("Mật khẩu xác nhận không khớp");
+        }
+
+        // Validate email format
+        if (!registerDTO.getEmail().matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
+            throw new Exception("Email không đúng định dạng");
+        }
+
+        // Validate full name
+        if (registerDTO.getFullName() == null || registerDTO.getFullName().trim().isEmpty()) {
+            throw new Exception("Họ tên không được để trống");
         }
 
         // Create new user
@@ -68,10 +78,18 @@ public class UserService {
 
     public User updateUser(Long id, User updatedUser) throws Exception {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new Exception("User not found"));
+                .orElseThrow(() -> new Exception("Không tìm thấy người dùng"));
 
+        // Validate full name
+        if (updatedUser.getFullName() == null || updatedUser.getFullName().trim().isEmpty()) {
+            throw new Exception("Họ tên không được để trống");
+        }
         user.setFullName(updatedUser.getFullName());
+
+        // Update phone
         user.setPhone(updatedUser.getPhone());
+
+        // Update address
         user.setAddress(updatedUser.getAddress());
 
         // Only admin can change role
@@ -79,19 +97,42 @@ public class UserService {
             user.setRole(updatedUser.getRole());
         }
 
+        // Update enabled status if provided
+        if (updatedUser.getEnabled() != null) {
+            user.setEnabled(updatedUser.getEnabled());
+        }
+
         return userRepository.save(user);
     }
 
     public void deleteUser(Long id) throws Exception {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new Exception("User not found"));
+                .orElseThrow(() -> new Exception("Không tìm thấy người dùng"));
+
+        // Check if user is admin
+        if (user.getRole() == User.Role.ADMIN) {
+            throw new Exception("Không thể xóa tài khoản Admin");
+        }
 
         // Check if user has orders
         if (userRepository.hasOrders(id)) {
-            throw new Exception("Cannot delete user with existing orders");
+            throw new Exception("Không thể xóa người dùng có đơn hàng. Bạn có thể vô hiệu hóa tài khoản thay vì xóa.");
         }
 
         userRepository.delete(user);
+    }
+
+    public User toggleUserStatus(Long id) throws Exception {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new Exception("Không tìm thấy người dùng"));
+
+        // Check if user is admin
+        if (user.getRole() == User.Role.ADMIN) {
+            throw new Exception("Không thể thay đổi trạng thái tài khoản Admin");
+        }
+
+        user.setEnabled(!user.getEnabled());
+        return userRepository.save(user);
     }
 
     public boolean hasOrders(Long userId) {
