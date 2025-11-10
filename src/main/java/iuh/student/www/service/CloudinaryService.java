@@ -38,16 +38,12 @@ public class CloudinaryService {
             // Tạo public_id unique
             String publicId = folder + "/" + UUID.randomUUID().toString();
 
-            // Upload lên Cloudinary
+            // Upload lên Cloudinary với cấu hình đơn giản
             Map uploadResult = cloudinary.uploader().upload(file.getBytes(),
                     ObjectUtils.asMap(
                             "public_id", publicId,
                             "folder", folder,
-                            "resource_type", "image",
-                            "transformation", ObjectUtils.asMap(
-                                    "quality", "auto",
-                                    "fetch_format", "auto"
-                            )
+                            "resource_type", "image"
                     ));
 
             String imageUrl = (String) uploadResult.get("secure_url");
