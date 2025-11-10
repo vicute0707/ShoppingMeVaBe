@@ -19,12 +19,14 @@
             font-family: 'Nunito', 'Quicksand', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
         }
 
-        html {
+        html, body {
             height: 100%;
+            margin: 0;
+            padding: 0;
         }
 
         body {
-            min-height: 100%;
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
             font-family: 'Nunito', 'Quicksand', sans-serif;
@@ -32,14 +34,18 @@
             line-height: 1.6;
             color: var(--text-dark);
             background: linear-gradient(135deg, #FFF5F7 0%, #FFF8FA 50%, #F0F8FF 100%);
+            background-attachment: fixed;
         }
 
         #main-content {
             flex: 1 0 auto;
+            width: 100%;
         }
 
         footer {
             flex-shrink: 0;
+            width: 100%;
+            margin-top: auto;
         }
 
         h1, h2, h3, h4, h5, h6 {

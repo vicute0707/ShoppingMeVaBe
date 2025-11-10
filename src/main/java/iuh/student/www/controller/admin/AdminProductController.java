@@ -119,7 +119,7 @@ public class AdminProductController {
             if (imageFile != null && !imageFile.isEmpty()) {
                 String imageUrl = fileStorageService.storeProductImage(imageFile);
                 product.setImageUrl(imageUrl);
-                log.info("✅ Uploaded image for product: {}", product.getName());
+                log.info("Uploaded image for product: {}", product.getName());
             }
 
             productService.createProduct(product);
@@ -127,7 +127,7 @@ public class AdminProductController {
                 "Sản phẩm đã được tạo thành công!");
             return "redirect:/admin/products";
         } catch (Exception e) {
-            log.error("❌ Failed to create product: {}", e.getMessage());
+            log.error("Failed to create product: {}", e.getMessage());
             model.addAttribute("errorMessage", e.getMessage());
             List<Category> categories = categoryService.getAllCategories();
             model.addAttribute("categories", categories);
@@ -177,7 +177,7 @@ public class AdminProductController {
                 // Upload new image
                 String imageUrl = fileStorageService.storeProductImage(imageFile);
                 product.setImageUrl(imageUrl);
-                log.info("✅ Updated image for product: {}", product.getName());
+                log.info("Updated image for product: {}", product.getName());
             } else {
                 // Keep old image if no new image uploaded
                 product.setImageUrl(existingProduct.getImageUrl());
@@ -188,7 +188,7 @@ public class AdminProductController {
                 "Sản phẩm đã được cập nhật thành công!");
             return "redirect:/admin/products";
         } catch (Exception e) {
-            log.error("❌ Failed to update product: {}", e.getMessage());
+            log.error("Failed to update product: {}", e.getMessage());
             model.addAttribute("errorMessage", e.getMessage());
             product.setId(id);
             List<Category> categories = categoryService.getAllCategories();
