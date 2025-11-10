@@ -20,8 +20,10 @@
                 <div class="card h-100">
                     <c:choose>
                         <c:when test="${product.imageUrl != null && !product.imageUrl.isEmpty()}">
-                            <img src="${product.imageUrl}" class="card-img-top" alt="${product.name}"
-                                 style="height: 200px; object-fit: cover;">
+                            <div style="height: 200px; background-color: #f8f9fa; display: flex; align-items: center; justify-content: center; padding: 10px;">
+                                <img src="${product.imageUrl}" class="card-img-top" alt="${product.name}"
+                                     style="max-height: 100%; max-width: 100%; object-fit: contain;">
+                            </div>
                         </c:when>
                         <c:otherwise>
                             <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center"
