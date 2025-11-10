@@ -33,6 +33,21 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
 
+        // Skip JWT authentication for logout and login endpoints
+        // /logout: Allows Spring Security's logout handler to properly clear cookies
+        // /login: Prevents auto-login from old JWT cookie after logout
+        // /register, /perform-login: Public endpoints that don't need JWT
+        String requestURI = request.getRequestURI();
+        if (requestURI.equals("/logout") ||
+            requestURI.equals("/clear-cookies") ||
+            requestURI.equals("/login") ||
+            requestURI.equals("/register") ||
+            requestURI.equals("/perform-login")) {
+            log.debug("Skipping JWT authentication for public endpoint: {}", requestURI);
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         // CRITICAL: Wrap everything in try-catch to prevent crashes from bad JWT tokens
         try {
             final String authorizationHeader = request.getHeader("Authorization");
