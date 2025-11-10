@@ -6,8 +6,8 @@
 
 <nav aria-label="breadcrumb">
     <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="${pageContext.request.contextPath}/">Home</a></li>
-        <li class="breadcrumb-item"><a href="${pageContext.request.contextPath}/products">Products</a></li>
+        <li class="breadcrumb-item"><a href="${pageContext.request.contextPath}/"><i class="fas fa-home"></i> Trang Chủ</a></li>
+        <li class="breadcrumb-item"><a href="${pageContext.request.contextPath}/products"><i class="fas fa-box"></i> Sản Phẩm</a></li>
         <li class="breadcrumb-item active">${product.name}</li>
     </ol>
 </nav>
@@ -28,20 +28,20 @@
     </div>
     <div class="col-md-6">
         <h2>${product.name}</h2>
-        <p class="text-muted">Category: ${product.category.name}</p>
+        <p class="text-muted"><i class="fas fa-tags"></i> Danh mục: ${product.category.name}</p>
         <hr>
-        <h3 class="text-primary">
-            <fmt:formatNumber value="${product.price}" type="currency" currencySymbol="$"/>
+        <h3 class="text-success">
+            <fmt:formatNumber value="${product.price}" type="number" groupingUsed="true" maxFractionDigits="0"/>₫
         </h3>
         <p class="lead">${product.description}</p>
         <p>
-            <strong>Stock:</strong>
+            <strong><i class="fas fa-warehouse"></i> Tình Trạng Kho:</strong>
             <c:choose>
                 <c:when test="${product.stockQuantity > 0}">
-                    <span class="text-success">${product.stockQuantity} available</span>
+                    <span class="text-success">Còn ${product.stockQuantity} sản phẩm</span>
                 </c:when>
                 <c:otherwise>
-                    <span class="text-danger">Out of stock</span>
+                    <span class="text-danger">Hết hàng</span>
                 </c:otherwise>
             </c:choose>
         </p>
@@ -51,17 +51,17 @@
             <input type="hidden" name="productId" value="${product.id}"/>
             <div class="row mb-3">
                 <div class="col-md-4">
-                    <label for="quantity" class="form-label">Quantity:</label>
+                    <label for="quantity" class="form-label"><i class="fas fa-sort-numeric-up"></i> Số Lượng:</label>
                     <input type="number" class="form-control" id="quantity" name="quantity"
                            value="1" min="1" max="${product.stockQuantity}" required>
                 </div>
             </div>
             <button type="submit" class="btn btn-success btn-lg"
                     <c:if test="${product.stockQuantity == 0}">disabled</c:if>>
-                <i class="fas fa-cart-plus"></i> Add to Cart
+                <i class="fas fa-cart-plus"></i> Thêm Vào Giỏ Hàng
             </button>
             <a href="${pageContext.request.contextPath}/products" class="btn btn-secondary btn-lg">
-                <i class="fas fa-arrow-left"></i> Back to Products
+                <i class="fas fa-arrow-left"></i> Quay Lại
             </a>
         </form>
     </div>

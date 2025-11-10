@@ -29,7 +29,7 @@
                             ${order.orderDate.dayOfMonth}/${order.orderDate.monthValue}/${order.orderDate.year} ${order.orderDate.hour}:${order.orderDate.minute < 10 ? '0' : ''}${order.orderDate.minute}
                         </td>
                         <td>
-                            <fmt:formatNumber value="${order.totalAmount}" type="currency" currencySymbol="$"/>
+                            <fmt:formatNumber value="${order.totalAmount}" type="number" groupingUsed="true" maxFractionDigits="0"/>₫
                         </td>
                         <td>
                             <c:choose>

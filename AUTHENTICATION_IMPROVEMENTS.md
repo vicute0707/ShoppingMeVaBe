@@ -1,4 +1,4 @@
-# ✨ CẢI THIỆN AUTHENTICATION - ĐƠN GIẢN VÀ CHÍNH XÁC
+# CẢI THIỆN AUTHENTICATION - ĐƠN GIẢN VÀ CHÍNH XÁC
 
 ## 🎯 MỤC TIÊU
 Làm cho authentication đơn giản, dễ sử dụng, không rườm rà cho người dùng.

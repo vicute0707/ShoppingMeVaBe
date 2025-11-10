@@ -30,7 +30,7 @@
                             <small class="text-muted">${order.orderDate.hour}:${order.orderDate.minute < 10 ? '0' : ''}${order.orderDate.minute}</small>
                         </td>
                         <td>
-                            <strong><fmt:formatNumber value="${order.totalAmount}" type="currency" currencySymbol="đ"/></strong>
+                            <strong><fmt:formatNumber value="${order.totalAmount}" type="number" groupingUsed="true" maxFractionDigits="0"/>₫</strong>
                         </td>
                         <td>
                             <c:choose>
