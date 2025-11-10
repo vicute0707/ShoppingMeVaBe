@@ -124,7 +124,7 @@ public class AdminProductController {
 
             productService.createProduct(product);
             redirectAttributes.addFlashAttribute("successMessage",
-                "🎉 Product created successfully with image!");
+                "Sản phẩm đã được tạo thành công!");
             return "redirect:/admin/products";
         } catch (Exception e) {
             log.error("❌ Failed to create product: {}", e.getMessage());
@@ -185,7 +185,7 @@ public class AdminProductController {
 
             productService.updateProduct(id, product);
             redirectAttributes.addFlashAttribute("successMessage",
-                "✨ Product updated successfully!");
+                "Sản phẩm đã được cập nhật thành công!");
             return "redirect:/admin/products";
         } catch (Exception e) {
             log.error("❌ Failed to update product: {}", e.getMessage());
@@ -200,11 +200,41 @@ public class AdminProductController {
     @PostMapping("/{id}/delete")
     public String deleteProduct(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         try {
+            // Get product to delete its image
+            Product product = productService.getProductById(id)
+                    .orElseThrow(() -> new Exception("Không tìm thấy sản phẩm"));
+
+            // Delete image file if exists
+            if (product.getImageUrl() != null && !product.getImageUrl().isEmpty()) {
+                fileStorageService.deleteFile(product.getImageUrl());
+            }
+
             productService.deleteProduct(id);
             redirectAttributes.addFlashAttribute("successMessage",
-                "Product deleted successfully");
+                "Sản phẩm đã được xóa thành công!");
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+            redirectAttributes.addFlashAttribute("errorMessage",
+                "Lỗi: " + e.getMessage());
+        }
+        return "redirect:/admin/products";
+    }
+
+    @PostMapping("/{id}/toggle-status")
+    public String toggleProductStatus(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        try {
+            Product product = productService.getProductById(id)
+                    .orElseThrow(() -> new Exception("Không tìm thấy sản phẩm"));
+
+            // Toggle active status
+            product.setActive(!product.getActive());
+            productService.updateProduct(id, product);
+
+            String status = product.getActive() ? "hiển thị" : "ẩn";
+            redirectAttributes.addFlashAttribute("successMessage",
+                "Sản phẩm đã được " + status + " thành công!");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage",
+                "Lỗi: " + e.getMessage());
         }
         return "redirect:/admin/products";
     }

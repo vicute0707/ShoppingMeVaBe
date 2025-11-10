@@ -22,13 +22,29 @@ public class ProductService {
     public Product createProduct(Product product) throws Exception {
         // Validate category exists
         if (product.getCategory() == null || product.getCategory().getId() == null) {
-            throw new Exception("Category is required");
+            throw new Exception("Vui lòng chọn danh mục cho sản phẩm");
         }
 
         Category category = categoryRepository.findById(product.getCategory().getId())
-                .orElseThrow(() -> new Exception("Category not found"));
+                .orElseThrow(() -> new Exception("Không tìm thấy danh mục đã chọn"));
 
         product.setCategory(category);
+
+        // Validate name
+        if (product.getName() == null || product.getName().trim().isEmpty()) {
+            throw new Exception("Tên sản phẩm không được để trống");
+        }
+
+        // Validate price
+        if (product.getPrice() == null || product.getPrice().doubleValue() <= 0) {
+            throw new Exception("Giá sản phẩm phải lớn hơn 0");
+        }
+
+        // Validate stock
+        if (product.getStockQuantity() == null || product.getStockQuantity() < 0) {
+            throw new Exception("Số lượng kho không được âm");
+        }
+
         return productRepository.save(product);
     }
 
@@ -64,32 +80,50 @@ public class ProductService {
 
     public Product updateProduct(Long id, Product updatedProduct) throws Exception {
         Product product = productRepository.findById(id)
-                .orElseThrow(() -> new Exception("Product not found"));
+                .orElseThrow(() -> new Exception("Không tìm thấy sản phẩm"));
 
-        // Validate category
-        if (updatedProduct.getCategory() != null && updatedProduct.getCategory().getId() != null) {
-            Category category = categoryRepository.findById(updatedProduct.getCategory().getId())
-                    .orElseThrow(() -> new Exception("Category not found"));
-            product.setCategory(category);
+        // Validate and update category
+        if (updatedProduct.getCategory() == null || updatedProduct.getCategory().getId() == null) {
+            throw new Exception("Vui lòng chọn danh mục cho sản phẩm");
         }
 
+        Category category = categoryRepository.findById(updatedProduct.getCategory().getId())
+                .orElseThrow(() -> new Exception("Không tìm thấy danh mục đã chọn"));
+        product.setCategory(category);
+
+        // Validate name
+        if (updatedProduct.getName() == null || updatedProduct.getName().trim().isEmpty()) {
+            throw new Exception("Tên sản phẩm không được để trống");
+        }
         product.setName(updatedProduct.getName());
-        product.setDescription(updatedProduct.getDescription());
+
+        // Validate and update price
+        if (updatedProduct.getPrice() == null || updatedProduct.getPrice().doubleValue() <= 0) {
+            throw new Exception("Giá sản phẩm phải lớn hơn 0");
+        }
         product.setPrice(updatedProduct.getPrice());
+
+        // Validate and update stock
+        if (updatedProduct.getStockQuantity() == null || updatedProduct.getStockQuantity() < 0) {
+            throw new Exception("Số lượng kho không được âm");
+        }
         product.setStockQuantity(updatedProduct.getStockQuantity());
+
+        // Update other fields
+        product.setDescription(updatedProduct.getDescription());
         product.setImageUrl(updatedProduct.getImageUrl());
-        product.setActive(updatedProduct.getActive());
+        product.setActive(updatedProduct.getActive() != null ? updatedProduct.getActive() : true);
 
         return productRepository.save(product);
     }
 
     public void deleteProduct(Long id) throws Exception {
         Product product = productRepository.findById(id)
-                .orElseThrow(() -> new Exception("Product not found"));
+                .orElseThrow(() -> new Exception("Không tìm thấy sản phẩm"));
 
         // Check if product is in any orders
         if (productRepository.isProductInOrders(id)) {
-            throw new Exception("Cannot delete product that has been ordered. You can deactivate it instead.");
+            throw new Exception("Không thể xóa sản phẩm đã có trong đơn hàng. Bạn có thể ẩn sản phẩm thay vì xóa.");
         }
 
         productRepository.delete(product);
@@ -101,11 +135,11 @@ public class ProductService {
 
     public void updateStock(Long productId, Integer quantity) throws Exception {
         Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new Exception("Product not found"));
+                .orElseThrow(() -> new Exception("Không tìm thấy sản phẩm"));
 
         int newStock = product.getStockQuantity() - quantity;
         if (newStock < 0) {
-            throw new Exception("Insufficient stock for product: " + product.getName());
+            throw new Exception("Không đủ số lượng trong kho cho sản phẩm: " + product.getName());
         }
 
         product.setStockQuantity(newStock);

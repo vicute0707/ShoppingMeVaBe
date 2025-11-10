@@ -2,15 +2,73 @@
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
 <!DOCTYPE html>
-<html>
+<html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>${pageTitle != null ? pageTitle : 'Shopping MeVaBe - Cute Shopping Store'}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&family=Nunito:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/pastel-theme.css">
     <style>
+        /* Global Typography - Cute & Easy to Read */
+        * {
+            font-family: 'Nunito', 'Quicksand', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+
+        html {
+            height: 100%;
+        }
+
+        body {
+            min-height: 100%;
+            display: flex;
+            flex-direction: column;
+            font-family: 'Nunito', 'Quicksand', sans-serif;
+            font-weight: 400;
+            line-height: 1.6;
+            color: var(--text-dark);
+            background: linear-gradient(135deg, #FFF5F7 0%, #FFF8FA 50%, #F0F8FF 100%);
+        }
+
+        #main-content {
+            flex: 1 0 auto;
+        }
+
+        footer {
+            flex-shrink: 0;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Quicksand', sans-serif;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        p, span, div, label {
+            font-family: 'Nunito', sans-serif;
+            font-weight: 500;
+        }
+
+        .btn {
+            font-family: 'Nunito', sans-serif;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+        }
+
+        /* Content Focus - Clean & Minimal */
+        .container {
+            max-width: 1400px;
+        }
+
+        /* Smooth Transitions */
+        * {
+            transition: all 0.2s ease;
+        }
+
         /* Pastel Navbar */
         .navbar-pastel {
             background: linear-gradient(135deg, #FFD1DC 0%, #E0BBE4 50%, #A7C7E7 100%) !important;
@@ -302,3 +360,6 @@
             });
         });
     </script>
+
+<!-- Main Content Wrapper for Sticky Footer -->
+<div id="main-content" class="container my-4">

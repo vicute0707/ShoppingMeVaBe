@@ -24,12 +24,13 @@
 
     .admin-product-card {
         background: white;
-        border: 3px solid var(--pastel-purple);
+        border: 2px solid rgba(224, 187, 228, 0.3);
         border-radius: 20px;
         padding: 20px;
-        transition: all 0.3s ease;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         position: relative;
         overflow: hidden;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
     }
 
     .admin-product-card::before {
@@ -38,14 +39,20 @@
         top: 0;
         left: 0;
         right: 0;
-        height: 5px;
+        height: 4px;
         background: linear-gradient(90deg, var(--pastel-pink), var(--pastel-purple), var(--pastel-blue));
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .admin-product-card:hover::before {
+        opacity: 1;
     }
 
     .admin-product-card:hover {
-        transform: translateY(-8px) scale(1.02);
-        box-shadow: 0 15px 35px rgba(224, 187, 228, 0.4);
-        border-color: var(--pastel-pink);
+        transform: translateY(-8px);
+        box-shadow: 0 20px 40px rgba(224, 187, 228, 0.3);
+        border-color: rgba(224, 187, 228, 0.6);
     }
 
     .product-image-container {
@@ -68,16 +75,33 @@
         transform: scale(1.1);
     }
 
+    .no-image-fallback {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 4rem;
+        color: var(--pastel-purple);
+        background: linear-gradient(135deg, #FFF5F7 0%, #F0F8FF 100%);
+    }
+
+    .no-image-fallback i {
+        opacity: 0.3;
+    }
+
     .product-badge {
         position: absolute;
         top: 10px;
         right: 10px;
-        background: rgba(255, 255, 255, 0.95);
-        padding: 5px 12px;
-        border-radius: 15px;
-        font-weight: 600;
-        font-size: 12px;
+        background: linear-gradient(135deg, var(--pastel-pink), var(--pastel-purple));
+        color: white;
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-weight: 700;
+        font-size: 11px;
         z-index: 1;
+        box-shadow: 0 3px 10px rgba(224, 187, 228, 0.5);
     }
 
     .product-info {
@@ -116,14 +140,74 @@
 
     .product-actions {
         display: flex;
-        gap: 10px;
+        gap: 8px;
+        margin-top: 10px;
     }
 
     .product-actions .btn {
         flex: 1;
-        padding: 10px;
-        border-radius: 15px;
+        padding: 10px 12px;
+        border-radius: 12px;
+        font-size: 13px;
+        font-weight: 600;
+        border: none;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+    }
+
+    .product-actions .btn i {
         font-size: 14px;
+    }
+
+    .product-actions .btn-warning {
+        background: linear-gradient(135deg, #ffc107 0%, #ffb300 100%);
+        color: white;
+    }
+
+    .product-actions .btn-warning:hover {
+        background: linear-gradient(135deg, #ffb300 0%, #ffa000 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);
+    }
+
+    .product-actions .btn-success {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        color: white;
+    }
+
+    .product-actions .btn-success:hover {
+        background: linear-gradient(135deg, #20c997 0%, #17a2b8 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(32, 201, 151, 0.3);
+    }
+
+    .product-actions .btn-secondary {
+        background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+        color: white;
+    }
+
+    .product-actions .btn-secondary:hover {
+        background: linear-gradient(135deg, #5a6268 0%, #545b62 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
+    }
+
+    .product-actions .btn-danger {
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        color: white;
+    }
+
+    .product-actions .btn-danger:hover {
+        background: linear-gradient(135deg, #c82333 0%, #bd2130 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+    }
+
+    .product-actions form {
+        flex: 1;
     }
 
     .page-header {
@@ -151,23 +235,61 @@
 
     .search-box-container {
         background: white;
-        border: 3px solid var(--pastel-purple);
+        border: 2px solid rgba(224, 187, 228, 0.3);
         border-radius: 20px;
         padding: 25px;
         margin-bottom: 30px;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+        transition: all 0.3s ease;
     }
 
-    .search-form {
-        display: flex;
-        gap: 15px;
+    .search-box-container:hover {
+        border-color: rgba(224, 187, 228, 0.6);
+        box-shadow: 0 6px 20px rgba(167, 199, 231, 0.15);
     }
 
-    .search-form input {
-        flex: 1;
-        border: 2px solid var(--pastel-purple);
-        border-radius: 20px;
-        padding: 12px 20px;
+    .search-box-container .input-group-text {
+        border: none;
+        font-weight: 600;
+    }
+
+    .search-box-container .form-control,
+    .search-box-container .form-select {
+        border: 2px solid rgba(224, 187, 228, 0.3);
+        font-weight: 500;
+        transition: all 0.2s ease;
+    }
+
+    .search-box-container .form-control:focus,
+    .search-box-container .form-select:focus {
+        border-color: var(--pastel-purple);
+        box-shadow: 0 0 0 0.2rem rgba(224, 187, 228, 0.2);
+    }
+
+    .search-box-container .btn-primary {
+        background: linear-gradient(135deg, var(--pastel-pink) 0%, var(--pastel-purple) 100%);
+        border: none;
+        font-weight: 700;
+        transition: all 0.2s ease;
+    }
+
+    .search-box-container .btn-primary:hover {
+        background: linear-gradient(135deg, var(--pastel-purple) 0%, var(--pastel-blue) 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(224, 187, 228, 0.4);
+    }
+
+    .search-box-container .btn-secondary {
+        background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+        border: none;
+        font-weight: 700;
+        transition: all 0.2s ease;
+    }
+
+    .search-box-container .btn-secondary:hover {
+        background: linear-gradient(135deg, #5a6268 0%, #545b62 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
     }
 
     .no-products {
@@ -282,12 +404,24 @@
                         <div class="product-image-container">
                             <c:choose>
                                 <c:when test="${product.imageUrl != null && !product.imageUrl.isEmpty()}">
-                                    <img src="${pageContext.request.contextPath}${product.imageUrl}"
-                                         alt="${product.name}"
-                                         onerror="this.src='${pageContext.request.contextPath}/images/no-image.png'">
+                                    <c:choose>
+                                        <c:when test="${product.imageUrl.startsWith('http://') || product.imageUrl.startsWith('https://')}">
+                                            <img src="${product.imageUrl}"
+                                                 alt="${product.name}"
+                                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                        </c:when>
+                                        <c:otherwise>
+                                            <img src="${pageContext.request.contextPath}${product.imageUrl}"
+                                                 alt="${product.name}"
+                                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                        </c:otherwise>
+                                    </c:choose>
+                                    <div class="no-image-fallback" style="display: none;">
+                                        <i class="fas fa-image"></i>
+                                    </div>
                                 </c:when>
                                 <c:otherwise>
-                                    <div style="display: flex; align-items: center; justify-content: center; height: 100%; font-size: 60px; color: var(--pastel-purple);">
+                                    <div class="no-image-fallback" style="display: flex;">
                                         <i class="fas fa-image"></i>
                                     </div>
                                 </c:otherwise>
@@ -325,9 +459,19 @@
 
                             <div class="product-actions">
                                 <a href="${pageContext.request.contextPath}/admin/products/${product.id}/edit"
-                                   class="btn btn-warning">
+                                   class="btn btn-warning" style="flex: 1;">
                                     <i class="fas fa-edit"></i> Sửa
                                 </a>
+
+                                <form action="${pageContext.request.contextPath}/admin/products/${product.id}/toggle-status"
+                                      method="post" style="flex: 1;">
+                                    <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
+                                    <button type="submit" class="btn ${product.active ? 'btn-secondary' : 'btn-success'} w-100">
+                                        <i class="fas ${product.active ? 'fa-eye-slash' : 'fa-eye'}"></i>
+                                        ${product.active ? 'Ẩn' : 'Hiện'}
+                                    </button>
+                                </form>
+
                                 <form action="${pageContext.request.contextPath}/admin/products/${product.id}/delete"
                                       method="post" style="flex: 1;"
                                       onsubmit="return confirm('Bạn chắc chắn muốn xóa sản phẩm này?')">

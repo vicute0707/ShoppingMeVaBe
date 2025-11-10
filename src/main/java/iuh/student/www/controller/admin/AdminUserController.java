@@ -29,7 +29,7 @@ public class AdminUserController {
     @GetMapping("/{id}")
     public String viewUser(@PathVariable Long id, Model model) {
         User user = userService.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
 
         model.addAttribute("user", user);
         return "admin/users/detail";
@@ -38,7 +38,7 @@ public class AdminUserController {
     @GetMapping("/{id}/edit")
     public String editUserForm(@PathVariable Long id, Model model) {
         User user = userService.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
 
         model.addAttribute("user", user);
         return "admin/users/form";
@@ -60,7 +60,7 @@ public class AdminUserController {
         try {
             userService.updateUser(id, user);
             redirectAttributes.addFlashAttribute("successMessage",
-                "User updated successfully");
+                "Người dùng đã được cập nhật thành công!");
             return "redirect:/admin/users";
         } catch (Exception e) {
             model.addAttribute("errorMessage", e.getMessage());
@@ -74,9 +74,24 @@ public class AdminUserController {
         try {
             userService.deleteUser(id);
             redirectAttributes.addFlashAttribute("successMessage",
-                "User deleted successfully");
+                "Người dùng đã được xóa thành công!");
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+            redirectAttributes.addFlashAttribute("errorMessage",
+                "Lỗi: " + e.getMessage());
+        }
+        return "redirect:/admin/users";
+    }
+
+    @PostMapping("/{id}/toggle-status")
+    public String toggleUserStatus(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        try {
+            User user = userService.toggleUserStatus(id);
+            String status = user.getEnabled() ? "kích hoạt" : "vô hiệu hóa";
+            redirectAttributes.addFlashAttribute("successMessage",
+                "Tài khoản đã được " + status + " thành công!");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage",
+                "Lỗi: " + e.getMessage());
         }
         return "redirect:/admin/users";
     }
