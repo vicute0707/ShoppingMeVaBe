@@ -1,6 +1,6 @@
 # 🔐 JWT Authentication API - Hướng Dẫn
 
-## ✨ Tính Năng Mới - JWT Authentication
+## Tính Năng Mới - JWT Authentication
 
 Hệ thống đã được nâng cấp lên JWT authentication - đơn giản, hiện đại và không rườm rà!
 
