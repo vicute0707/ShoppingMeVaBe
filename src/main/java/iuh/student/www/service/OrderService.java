@@ -31,8 +31,11 @@ public class OrderService {
 
     public Order createOrder(User user, Cart cart, CheckoutDTO checkoutDTO) throws Exception {
         if (cart == null || cart.isEmpty()) {
-            throw new Exception("Cart is empty");
+            throw new Exception("Giỏ hàng trống");
         }
+
+        // Xác định payment status dựa trên payment method
+        String paymentStatus = "COD".equals(checkoutDTO.getPaymentMethod()) ? "UNPAID" : "PENDING";
 
         // Create order
         Order order = Order.builder()
@@ -43,6 +46,8 @@ public class OrderService {
                 .shippingAddress(checkoutDTO.getShippingAddress())
                 .phone(checkoutDTO.getPhone())
                 .notes(checkoutDTO.getNotes())
+                .paymentMethod(checkoutDTO.getPaymentMethod())
+                .paymentStatus(paymentStatus)
                 .orderDetails(new ArrayList<>())
                 .build();
 

@@ -1,24 +1,24 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
-<c:set var="pageTitle" value="Products - Shopping Store" scope="request"/>
+<c:set var="pageTitle" value="Sản Phẩm - Shopping Store" scope="request"/>
 <jsp:include page="../common/header.jsp"/>
 
-<h2 class="mb-4">Products</h2>
+<h2 class="mb-4"><i class="fas fa-box"></i> Danh Sách Sản Phẩm</h2>
 
 <div class="row mb-4">
     <div class="col-md-6">
         <form action="${pageContext.request.contextPath}/products" method="get" class="d-flex">
             <input type="search" name="search" class="form-control me-2"
-                   placeholder="Search products..." value="${search}">
+                   placeholder="Tìm kiếm sản phẩm..." value="${search}">
             <button type="submit" class="btn btn-primary">
-                <i class="fas fa-search"></i> Search
+                <i class="fas fa-search"></i> Tìm
             </button>
         </form>
     </div>
     <div class="col-md-6">
         <select class="form-select" id="categoryFilter" onchange="filterByCategory()">
-            <option value="">All Categories</option>
+            <option value="">Tất Cả Danh Mục</option>
             <c:forEach items="${categories}" var="category">
                 <option value="${category.id}"
                         <c:if test="${selectedCategoryId == category.id}">selected</c:if>>
@@ -50,24 +50,25 @@
                     <p class="card-text"><small class="text-muted">${product.category.name}</small></p>
                     <p class="card-text text-truncate">${product.description}</p>
                     <p class="card-text">
-                        <strong>Price:</strong>
-                        <fmt:formatNumber value="${product.price}" type="currency" currencySymbol="$"/>
+                        <strong class="text-success">
+                            <fmt:formatNumber value="${product.price}" type="number" groupingUsed="true" maxFractionDigits="0"/>₫
+                        </strong>
                     </p>
                     <p class="card-text">
-                        <small class="text-muted">Stock: ${product.stockQuantity}</small>
+                        <small class="text-muted"><i class="fas fa-warehouse"></i> Kho: ${product.stockQuantity}</small>
                     </p>
                 </div>
                 <div class="card-footer">
                     <div class="d-grid gap-2">
                         <a href="${pageContext.request.contextPath}/products/detail?id=${product.id}"
-                           class="btn btn-primary btn-sm">View Details</a>
+                           class="btn btn-primary btn-sm"><i class="fas fa-info-circle"></i> Xem Chi Tiết</a>
                         <form action="${pageContext.request.contextPath}/cart/add" method="post">
                             <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
                             <input type="hidden" name="productId" value="${product.id}"/>
                             <input type="hidden" name="quantity" value="1"/>
                             <button type="submit" class="btn btn-success btn-sm w-100"
                                     <c:if test="${product.stockQuantity == 0}">disabled</c:if>>
-                                <i class="fas fa-cart-plus"></i> Add to Cart
+                                <i class="fas fa-cart-plus"></i> Thêm Vào Giỏ
                             </button>
                         </form>
                     </div>
@@ -79,7 +80,7 @@
 
 <c:if test="${products.size() == 0}">
     <div class="alert alert-info">
-        No products found.
+        <i class="fas fa-info-circle"></i> Không tìm thấy sản phẩm nào.
     </div>
 </c:if>
 
