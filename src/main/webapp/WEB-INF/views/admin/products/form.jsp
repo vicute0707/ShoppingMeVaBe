@@ -175,7 +175,9 @@
     <div class="col-md-10">
         <div class="product-form-container cute-font">
             <div class="form-card">
-                <h3>${product.id != null ? '✏️ Chỉnh sửa sản phẩm' : '🎀 Thêm sản phẩm mới'}</h3>
+                <h3>
+                    ${product.id != null ? '<i class="fas fa-edit"></i> Chỉnh sửa sản phẩm' : '<i class="fas fa-plus-circle"></i> Thêm sản phẩm mới'}
+                </h3>
 
                 <form:form action="${product.id != null ? pageContext.request.contextPath.concat('/admin/products/').concat(product.id) : pageContext.request.contextPath.concat('/admin/products')}"
                            method="post" modelAttribute="product" enctype="multipart/form-data" id="productForm">
@@ -183,7 +185,7 @@
 
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label for="name" class="form-label">🌸 Tên sản phẩm *</label>
+                            <label for="name" class="form-label"><i class="fas fa-tag"></i> Tên sản phẩm *</label>
                             <form:input path="name" class="form-control" id="name"
                                         required="required" minlength="2" maxlength="200"
                                         placeholder="Nhập tên sản phẩm đáng yêu..."/>
@@ -191,7 +193,7 @@
                         </div>
 
                         <div class="col-md-6 mb-3">
-                            <label for="category" class="form-label">📁 Danh mục *</label>
+                            <label for="category" class="form-label"><i class="fas fa-folder"></i> Danh mục *</label>
                             <form:select path="category.id" class="form-select" id="category" required="required">
                                 <option value="">Chọn danh mục...</option>
                                 <c:forEach items="${categories}" var="cat">
@@ -206,7 +208,7 @@
                     </div>
 
                     <div class="mb-3">
-                        <label for="description" class="form-label">📝 Mô tả</label>
+                        <label for="description" class="form-label"><i class="fas fa-align-left"></i> Mô tả</label>
                         <form:textarea path="description" class="form-control" id="description"
                                        rows="4" maxlength="2000"
                                        placeholder="Mô tả chi tiết về sản phẩm..."/>
@@ -215,14 +217,14 @@
 
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label for="price" class="form-label">💰 Giá *</label>
+                            <label for="price" class="form-label"><i class="fas fa-dollar-sign"></i> Giá *</label>
                             <form:input path="price" type="number" step="0.01" class="form-control" id="price"
                                         required="required" min="0.01" placeholder="0.00"/>
                             <form:errors path="price" cssClass="text-danger"/>
                         </div>
 
                         <div class="col-md-6 mb-3">
-                            <label for="stockQuantity" class="form-label">📦 Số lượng *</label>
+                            <label for="stockQuantity" class="form-label"><i class="fas fa-box"></i> Số lượng *</label>
                             <form:input path="stockQuantity" type="number" class="form-control" id="stockQuantity"
                                         required="required" min="0" placeholder="0"/>
                             <form:errors path="stockQuantity" cssClass="text-danger"/>
@@ -230,10 +232,10 @@
                     </div>
 
                     <div class="mb-4">
-                        <label class="form-label">🖼️ Hình ảnh sản phẩm</label>
+                        <label class="form-label"><i class="fas fa-image"></i> Hình ảnh sản phẩm</label>
                         <div class="image-upload-area" onclick="document.getElementById('imageFile').click();">
                             <label for="imageFile">
-                                <div class="upload-icon">📷</div>
+                                <div class="upload-icon"><i class="fas fa-camera"></i></div>
                                 <p style="margin: 0; color: var(--text-dark); font-weight: 600;">
                                     Nhấn để chọn ảnh từ máy tính
                                 </p>
@@ -268,20 +270,20 @@
                     <div class="mb-4 form-check">
                         <form:checkbox path="active" class="form-check-input" id="active"/>
                         <label class="form-check-label" for="active" style="color: var(--text-dark); font-weight: 600;">
-                            ✅ Kích hoạt sản phẩm
+                            <i class="fas fa-check-circle"></i> Kích hoạt sản phẩm
                         </label>
                     </div>
 
                     <div class="row g-3">
                         <div class="col-md-6">
                             <button type="submit" class="btn btn-cute-primary w-100">
-                                <i class="fas fa-save"></i> 💾 Lưu sản phẩm
+                                <i class="fas fa-save"></i> Lưu sản phẩm
                             </button>
                         </div>
                         <div class="col-md-6">
                             <a href="${pageContext.request.contextPath}/admin/products"
                                class="btn btn-cute-secondary w-100">
-                                <i class="fas fa-arrow-left"></i> 🔙 Quay lại
+                                <i class="fas fa-arrow-left"></i> Quay lại
                             </a>
                         </div>
                     </div>
