@@ -325,9 +325,19 @@
 
                             <div class="product-actions">
                                 <a href="${pageContext.request.contextPath}/admin/products/${product.id}/edit"
-                                   class="btn btn-warning">
+                                   class="btn btn-warning" style="flex: 1;">
                                     <i class="fas fa-edit"></i> Sửa
                                 </a>
+
+                                <form action="${pageContext.request.contextPath}/admin/products/${product.id}/toggle-status"
+                                      method="post" style="flex: 1;">
+                                    <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
+                                    <button type="submit" class="btn ${product.active ? 'btn-secondary' : 'btn-success'} w-100">
+                                        <i class="fas ${product.active ? 'fa-eye-slash' : 'fa-eye'}"></i>
+                                        ${product.active ? 'Ẩn' : 'Hiện'}
+                                    </button>
+                                </form>
+
                                 <form action="${pageContext.request.contextPath}/admin/products/${product.id}/delete"
                                       method="post" style="flex: 1;"
                                       onsubmit="return confirm('Bạn chắc chắn muốn xóa sản phẩm này?')">

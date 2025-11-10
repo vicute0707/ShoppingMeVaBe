@@ -63,7 +63,7 @@ public class FileStorageService {
 
         } catch (IOException ex) {
             log.error("❌ Failed to store file: {}", file.getOriginalFilename(), ex);
-            throw new RuntimeException("Failed to store file: " + file.getOriginalFilename(), ex);
+            throw new RuntimeException("Lỗi khi lưu file ảnh: " + file.getOriginalFilename(), ex);
         }
     }
 
@@ -96,19 +96,19 @@ public class FileStorageService {
         // Check file size (max 5MB)
         long maxSize = 5 * 1024 * 1024; // 5MB
         if (file.getSize() > maxSize) {
-            throw new RuntimeException("File size exceeds maximum limit of 5MB");
+            throw new RuntimeException("Kích thước file vượt quá giới hạn 5MB");
         }
 
         // Check file type
         String contentType = file.getContentType();
         if (contentType == null || !contentType.startsWith("image/")) {
-            throw new RuntimeException("Only image files are allowed");
+            throw new RuntimeException("Chỉ cho phép upload file ảnh (JPG, PNG, GIF)");
         }
 
         // Check filename
         String filename = file.getOriginalFilename();
         if (filename == null || filename.contains("..")) {
-            throw new RuntimeException("Invalid filename");
+            throw new RuntimeException("Tên file không hợp lệ");
         }
     }
 

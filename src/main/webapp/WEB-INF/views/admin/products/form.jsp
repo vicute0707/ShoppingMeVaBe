@@ -45,14 +45,6 @@
         font-size: 28px;
     }
 
-    .form-card h3::before {
-        content: "✨ ";
-    }
-
-    .form-card h3::after {
-        content: " ✨";
-    }
-
     .form-label {
         color: var(--text-dark);
         font-weight: 600;
