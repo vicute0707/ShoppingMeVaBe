@@ -127,7 +127,7 @@ public class EmailService {
                 "</tr>" +
                 "</thead>" +
                 "<tbody>" +
-                orderItems.toString() +
+                orderItems +
                 "</tbody>" +
                 "</table>" +
                 "<div style='text-align: right; margin-top: 20px;'>" +
