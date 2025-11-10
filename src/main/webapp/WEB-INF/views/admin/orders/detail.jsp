@@ -86,7 +86,7 @@
                         <tr>
                             <td>${detail.product.name}</td>
                             <td>
-                                <fmt:formatNumber value="${detail.unitPrice}" type="currency" currencySymbol="$"/>
+                                <fmt:formatNumber value="${detail.unitPrice}" type="number" groupingUsed="true" maxFractionDigits="0"/>₫
                             </td>
                             <td>
                                 <form action="${pageContext.request.contextPath}/admin/orders/details/${detail.id}/update"
@@ -101,20 +101,20 @@
                                 </form>
                             </td>
                             <td>
-                                <fmt:formatNumber value="${detail.subtotal}" type="currency" currencySymbol="$"/>
+                                <fmt:formatNumber value="${detail.subtotal}" type="number" groupingUsed="true" maxFractionDigits="0"/>₫
                             </td>
                             <td>
-                                <small class="text-muted">Can update quantity</small>
+                                <small class="text-muted">Có thể cập nhật số lượng</small>
                             </td>
                         </tr>
                     </c:forEach>
                     </tbody>
                     <tfoot>
                     <tr>
-                        <td colspan="3" class="text-end"><strong>Total:</strong></td>
+                        <td colspan="3" class="text-end"><strong>Tổng Cộng:</strong></td>
                         <td colspan="2">
-                            <strong>
-                                <fmt:formatNumber value="${order.totalAmount}" type="currency" currencySymbol="$"/>
+                            <strong class="text-success">
+                                <fmt:formatNumber value="${order.totalAmount}" type="number" groupingUsed="true" maxFractionDigits="0"/>₫
                             </strong>
                         </td>
                     </tr>

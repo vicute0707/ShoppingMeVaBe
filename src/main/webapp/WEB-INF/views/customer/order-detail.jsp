@@ -133,11 +133,11 @@
                         <tr>
                             <td>${detail.product.name}</td>
                             <td>
-                                <fmt:formatNumber value="${detail.unitPrice}" type="currency" currencySymbol="đ"/>
+                                <fmt:formatNumber value="${detail.unitPrice}" type="number" groupingUsed="true" maxFractionDigits="0"/>₫
                             </td>
                             <td>${detail.quantity}</td>
                             <td>
-                                <fmt:formatNumber value="${detail.subtotal}" type="currency" currencySymbol="đ"/>
+                                <fmt:formatNumber value="${detail.subtotal}" type="number" groupingUsed="true" maxFractionDigits="0"/>₫
                             </td>
                         </tr>
                     </c:forEach>
@@ -147,7 +147,7 @@
                         <td colspan="3" class="text-end"><strong>Tổng cộng:</strong></td>
                         <td>
                             <strong>
-                                <fmt:formatNumber value="${order.totalAmount}" type="currency" currencySymbol="đ"/>
+                                <fmt:formatNumber value="${order.totalAmount}" type="number" groupingUsed="true" maxFractionDigits="0"/>₫
                             </strong>
                         </td>
                     </tr>
@@ -179,7 +179,7 @@
                 <hr>
                 <h4>
                     <strong>Tổng tiền:</strong><br>
-                    <fmt:formatNumber value="${order.totalAmount}" type="currency" currencySymbol="đ"/>
+                    <fmt:formatNumber value="${order.totalAmount}" type="number" groupingUsed="true" maxFractionDigits="0"/>₫
                 </h4>
             </div>
             <div class="card-footer">
