@@ -81,6 +81,9 @@ public class SecurityConfig {
                         // MoMo Payment - Public callbacks and success page
                         .requestMatchers("/payment/momo/callback", "/payment/momo/ipn", "/payment/success").permitAll()
 
+                        // AI Chatbot - Public API
+                        .requestMatchers("/api/chatbot/**").permitAll()
+
                         // Customer web pages - Authenticated
                         .requestMatchers("/checkout", "/checkout/**").hasAnyRole("CUSTOMER", "ADMIN")
                         .requestMatchers("/orders", "/orders/**", "/profile", "/profile/**").hasAnyRole("CUSTOMER", "ADMIN")
