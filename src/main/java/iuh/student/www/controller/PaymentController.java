@@ -164,14 +164,23 @@ public class PaymentController {
                 order.setTransactionId(transId != null ? transId.toString() : null);
                 orderService.save(order);
 
-                redirectAttributes.addFlashAttribute("success", "Thanh toán thành công! Đơn hàng #" + orderIdLong + " đang được xử lý.");
-                return "redirect:/checkout/orders/" + orderIdLong;
+                // Redirect đến trang success (public page)
+                model.addAttribute("success", true);
+                model.addAttribute("orderId", orderIdLong);
+                model.addAttribute("amount", amount);
+                model.addAttribute("transactionId", transId);
+                model.addAttribute("message", "Thanh toán thành công! Đơn hàng #" + orderIdLong + " đang được xử lý.");
+                return "payment/success";
 
             } else {
                 // Thanh toán thất bại
                 log.warn("Payment failed for order #{}: {} - {}", orderIdLong, resultCode, message);
-                redirectAttributes.addFlashAttribute("error", "Thanh toán thất bại: " + message);
-                return "redirect:/checkout/orders/" + orderIdLong;
+
+                // Redirect đến trang success với thông báo lỗi
+                model.addAttribute("success", false);
+                model.addAttribute("orderId", orderIdLong);
+                model.addAttribute("message", message);
+                return "payment/success";
             }
 
         } catch (Exception e) {

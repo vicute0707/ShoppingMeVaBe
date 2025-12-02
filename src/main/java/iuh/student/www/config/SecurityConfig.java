@@ -78,8 +78,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/products", "/api/products/**").permitAll()
                         .requestMatchers("/api/categories", "/api/categories/**").permitAll()
 
-                        // MoMo Payment - Public callbacks
-                        .requestMatchers("/payment/momo/callback", "/payment/momo/ipn").permitAll()
+                        // MoMo Payment - Public callbacks and success page
+                        .requestMatchers("/payment/momo/callback", "/payment/momo/ipn", "/payment/success").permitAll()
 
                         // Customer web pages - Authenticated
                         .requestMatchers("/checkout", "/checkout/**").hasAnyRole("CUSTOMER", "ADMIN")
@@ -88,7 +88,7 @@ public class SecurityConfig {
                         // Customer APIs - Authenticated
                         .requestMatchers("/api/customer/**").hasAnyRole("CUSTOMER", "ADMIN")
                         .requestMatchers("/api/orders/**").hasAnyRole("CUSTOMER", "ADMIN")
-                        .requestMatchers("/payment/momo/create/**").hasAnyRole("CUSTOMER", "ADMIN")
+                        .requestMatchers("/payment/**").hasAnyRole("CUSTOMER", "ADMIN")
 
                         // Admin web pages & APIs - Admin only
                         .requestMatchers("/admin/**").hasRole("ADMIN")
