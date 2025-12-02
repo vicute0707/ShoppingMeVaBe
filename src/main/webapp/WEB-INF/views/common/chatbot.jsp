@@ -28,7 +28,7 @@
             </button>
         </div>
 
-        <!-- Messages Area -->
+        <!-- Messages Area with Typing Indicator Inside -->
         <div id="chatbot-messages" class="chatbot-messages">
             <!-- Welcome message -->
             <div class="chatbot-message bot-message">
@@ -49,6 +49,18 @@
                         Bạn cần giúp gì không? 😊
                     </div>
                     <div class="message-time">Bây giờ</div>
+                </div>
+            </div>
+
+            <!-- Typing Indicator (Inside Messages Area) -->
+            <div id="chatbot-typing" class="chatbot-typing-msg" style="display: none;">
+                <div class="message-avatar">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <div class="typing-indicator">
+                    <span></span>
+                    <span></span>
+                    <span></span>
                 </div>
             </div>
         </div>
@@ -75,15 +87,6 @@
             <button id="chatbot-send" class="chatbot-send-btn" title="Gửi">
                 <i class="fas fa-paper-plane"></i>
             </button>
-        </div>
-
-        <!-- Typing Indicator -->
-        <div id="chatbot-typing" class="chatbot-typing" style="display: none;">
-            <div class="typing-indicator">
-                <span></span>
-                <span></span>
-                <span></span>
-            </div>
         </div>
     </div>
 </div>
@@ -421,19 +424,21 @@
         cursor: not-allowed;
     }
 
-    /* Typing Indicator */
-    .chatbot-typing {
-        padding: 12px 20px;
-        background: white;
-        border-top: 1px solid #e2e8f0;
+    /* Typing Indicator (Inside Messages Area) */
+    .chatbot-typing-msg {
+        display: flex;
+        gap: 10px;
+        animation: messageSlide 0.3s ease;
     }
 
     .typing-indicator {
         display: flex;
         gap: 4px;
-        padding: 12px;
-        background: #f7fafc;
+        padding: 12px 16px;
+        background: white;
         border-radius: 16px;
+        border-bottom-left-radius: 4px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
         width: fit-content;
     }
 
@@ -543,8 +548,9 @@ document.addEventListener('DOMContentLoaded', function() {
         messageInput.style.height = 'auto';
 
         // Show typing indicator
-        typingIndicator.style.display = 'block';
+        typingIndicator.style.display = 'flex';
         sendBtn.disabled = true;
+        scrollToBottom();
 
         // Call chatbot API
         fetch('/api/chatbot/chat', {
@@ -611,7 +617,13 @@ document.addEventListener('DOMContentLoaded', function() {
         messageDiv.appendChild(content);
 
         messagesContainer.appendChild(messageDiv);
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        scrollToBottom();
+    }
+
+    function scrollToBottom() {
+        setTimeout(() => {
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }, 100);
     }
 
     function updateSuggestions(actions) {
