@@ -3,11 +3,16 @@ package iuh.student.www.controller;
 import iuh.student.www.dto.MoMoCallbackResponse;
 import iuh.student.www.dto.MoMoPaymentResponse;
 import iuh.student.www.entity.Order;
+import iuh.student.www.security.CustomUserDetailsService;
+import iuh.student.www.security.JwtUtil;
 import iuh.student.www.service.MoMoService;
 import iuh.student.www.service.OrderService;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -25,6 +30,8 @@ public class PaymentController {
 
     private final MoMoService moMoService;
     private final OrderService orderService;
+    private final JwtUtil jwtUtil;
+    private final CustomUserDetailsService userDetailsService;
 
     /**
      * Tạo thanh toán MoMo
@@ -110,7 +117,8 @@ public class PaymentController {
             @RequestParam(required = false) String extraData,
             @RequestParam(required = false) String signature,
             Model model,
-            RedirectAttributes redirectAttributes
+            RedirectAttributes redirectAttributes,
+            HttpServletResponse response
     ) {
         try {
             log.info("MoMo callback received - OrderId: {}, ResultCode: {}, Message: {}", orderId, resultCode, message);
@@ -137,8 +145,9 @@ public class PaymentController {
 
             if (!isValid) {
                 log.error("Invalid MoMo signature");
-                redirectAttributes.addFlashAttribute("error", "Chữ ký không hợp lệ");
-                return "redirect:/";
+                model.addAttribute("success", false);
+                model.addAttribute("message", "Chữ ký không hợp lệ");
+                return "payment/success";
             }
 
             // Lấy order ID từ MoMo order ID
@@ -146,8 +155,9 @@ public class PaymentController {
 
             if (orderIdLong == null) {
                 log.error("Cannot extract order ID from: {}", orderId);
-                redirectAttributes.addFlashAttribute("error", "Không thể xác định đơn hàng");
-                return "redirect:/";
+                model.addAttribute("success", false);
+                model.addAttribute("message", "Không thể xác định đơn hàng");
+                return "payment/success";
             }
 
             // Lấy thông tin đơn hàng
@@ -164,7 +174,38 @@ public class PaymentController {
                 order.setTransactionId(transId != null ? transId.toString() : null);
                 orderService.save(order);
 
-                // Redirect đến trang success (public page)
+                // Tự động restore JWT token từ extraData
+                String userEmail = moMoService.extractUserEmail(extraData);
+                if (userEmail != null && !userEmail.isEmpty()) {
+                    try {
+                        // Verify order ownership
+                        if (!order.getUser().getEmail().equals(userEmail)) {
+                            log.warn("User email mismatch in extraData: {} vs {}", userEmail, order.getUser().getEmail());
+                        } else {
+                            // Load user details và tạo JWT token mới
+                            UserDetails userDetails = userDetailsService.loadUserByUsername(userEmail);
+                            String jwtToken = jwtUtil.generateToken(userDetails);
+
+                            // Set JWT token vào cookie
+                            Cookie jwtCookie = new Cookie("JWT_TOKEN", jwtToken);
+                            jwtCookie.setHttpOnly(true);
+                            jwtCookie.setPath("/");
+                            jwtCookie.setMaxAge(24 * 60 * 60); // 24 hours
+                            response.addCookie(jwtCookie);
+
+                            log.info("✅ Auto-restored JWT token for user: {}", userEmail);
+
+                            // Redirect trực tiếp đến order detail page (đã có JWT token)
+                            redirectAttributes.addFlashAttribute("success", "Thanh toán thành công! Đơn hàng #" + orderIdLong + " đang được xử lý.");
+                            return "redirect:/checkout/orders/" + orderIdLong;
+                        }
+                    } catch (Exception e) {
+                        log.error("Error restoring JWT token for user: {}", userEmail, e);
+                    }
+                }
+
+                // Fallback: nếu không restore được token, hiển thị trang success
+                log.info("⚠️ Could not auto-restore JWT token, showing success page");
                 model.addAttribute("success", true);
                 model.addAttribute("orderId", orderIdLong);
                 model.addAttribute("amount", amount);
@@ -185,8 +226,9 @@ public class PaymentController {
 
         } catch (Exception e) {
             log.error("Error processing MoMo callback", e);
-            redirectAttributes.addFlashAttribute("error", "Có lỗi xảy ra khi xử lý thanh toán: " + e.getMessage());
-            return "redirect:/";
+            model.addAttribute("success", false);
+            model.addAttribute("message", "Có lỗi xảy ra khi xử lý thanh toán: " + e.getMessage());
+            return "payment/success";
         }
     }
 

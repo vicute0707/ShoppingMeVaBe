@@ -50,10 +50,17 @@ public class MoMoService {
             // Số tiền (đơn vị VNĐ)
             Long amount = order.getTotalAmount().longValue();
 
+            // Lưu user email vào extraData để restore session sau khi thanh toán
+            // Encode Base64 để tránh lỗi với các ký tự đặc biệt
+            String userEmail = order.getUser().getEmail();
+            String extraData = java.util.Base64.getEncoder().encodeToString(userEmail.getBytes(StandardCharsets.UTF_8));
+
+            log.info("Creating payment for user: {} (encoded in extraData)", userEmail);
+
             // Tạo raw signature
             String rawSignature = "accessKey=" + moMoConfig.getAccessKey() +
                     "&amount=" + amount +
-                    "&extraData=" +
+                    "&extraData=" + extraData +
                     "&ipnUrl=" + moMoConfig.getIpnUrl() +
                     "&orderId=" + orderId +
                     "&orderInfo=" + orderInfo +
@@ -79,7 +86,7 @@ public class MoMoService {
                     .redirectUrl(moMoConfig.getRedirectUrl())
                     .ipnUrl(moMoConfig.getIpnUrl())
                     .lang("vi")
-                    .extraData("")
+                    .extraData(extraData)
                     .requestType(moMoConfig.getRequestType())
                     .signature(signature)
                     .autoCapture(true)
@@ -191,6 +198,25 @@ public class MoMoService {
             return Long.parseLong(orderIdPart);
         } catch (Exception e) {
             log.error("Error extracting order ID from: {}", momoOrderId, e);
+            return null;
+        }
+    }
+
+    /**
+     * Decode user email từ extraData
+     * extraData là Base64 encoded user email
+     */
+    public String extractUserEmail(String extraData) {
+        try {
+            if (extraData == null || extraData.isEmpty()) {
+                return null;
+            }
+            byte[] decodedBytes = java.util.Base64.getDecoder().decode(extraData);
+            String userEmail = new String(decodedBytes, StandardCharsets.UTF_8);
+            log.info("Extracted user email from extraData: {}", userEmail);
+            return userEmail;
+        } catch (Exception e) {
+            log.error("Error extracting user email from extraData: {}", extraData, e);
             return null;
         }
     }
