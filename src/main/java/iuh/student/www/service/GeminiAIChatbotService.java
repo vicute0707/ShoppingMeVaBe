@@ -87,14 +87,14 @@ public class GeminiAIChatbotService {
             // Lấy thông tin user
             Optional<User> userOpt = userRepository.findById(userId);
             if (userOpt.isPresent()) {
-                User user = userOpt.getPresent();
+                User user = userOpt.get();
                 context.append("## THÔNG TIN NGƯỜI DÙNG\n");
-                context.append("- Tên: ").append(user.getName()).append("\n");
+                context.append("- Tên: ").append(user.getFullName()).append("\n");
                 context.append("- Email: ").append(user.getEmail()).append("\n");
                 context.append("- Vai trò: ").append(user.getRole()).append("\n\n");
 
                 // Lấy đơn hàng của user
-                List<Order> orders = orderRepository.findByUserOrderByOrderDateDesc(user);
+                List<Order> orders = orderRepository.findByUserIdOrderByOrderDateDesc(user.getId());
                 if (!orders.isEmpty()) {
                     context.append("## ĐƠN HÀNG\n");
                     context.append("Tổng số đơn hàng: ").append(orders.size()).append("\n");
@@ -121,7 +121,7 @@ public class GeminiAIChatbotService {
             products.stream().limit(10).forEach(product -> {
                 context.append("- ").append(product.getName())
                         .append(" (").append(String.format("%,d", product.getPrice().intValue())).append("₫")
-                        .append(") - Còn: ").append(product.getQuantityInStock()).append("\n");
+                        .append(") - Còn: ").append(product.getStockQuantity()).append("\n");
             });
         }
 
@@ -215,11 +215,11 @@ public class GeminiAIChatbotService {
 
             if (candidates != null && !candidates.isEmpty()) {
                 Map<String, Object> candidate = candidates.get(0);
-                Map<String, Object> content = (Map<String, Object>) candidate.get("content");
-                List<Map<String, String>> parts = (List<Map<String, String>>) content.get("parts");
+                Map<String, Object> responseContent = (Map<String, Object>) candidate.get("content");
+                List<Map<String, String>> responseParts = (List<Map<String, String>>) responseContent.get("parts");
 
-                if (parts != null && !parts.isEmpty()) {
-                    return parts.get(0).get("text");
+                if (responseParts != null && !responseParts.isEmpty()) {
+                    return responseParts.get(0).get("text");
                 }
             }
 
